@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QuakePredictEC — Prototipo (sin módulo de modelo)</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <header>
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+            <h1>QuakePredictEC</h1>
+            <div class="subtitle">Plataforma de análisis y predicción de sismos asociados a variación climática en Ecuador</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <div class="section">
+                <div class="tab" data-tab="mapa"><span class="dot" style="background: var(--accent2)"></span>
+                    <div>Mapa de Riesgo</div>
+                </div>
+                <div class="tab" data-tab="datos"><span class="dot" style="background: #60a5fa"></span>
+                    <div>Explorador de Datos</div>
+                </div>
+                <div class="tab" data-tab="alertas"><span class="dot" style="background: #f87171"></span>
+                    <div>Alertas</div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="chip">Mín. Magnitud: M≥4.0</div>
+                <div class="chip">Horizonte: 7 días</div>
+                <div class="chip">Región: Costa / Sierra / Oriente</div>
+            </div>
+            <div class="section">
+                <div class="badge">Demo offline • Datos simulados</div>
+            </div>
+        </nav>
+
+        <main>
+            <div class="toolbar">
+                <div>
+                    <label>Rango de fechas</label><br />
+                    <input type="date" id="start"> <input type="date" id="end">
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <section id="view-dashboard">
+                <div class="kpis">
+                    <div class="kpi">
+                        <div class="label">Prob. promedio Ecuador (7d)</div>
+                        <div class="value" id="kpiProb">12.4%</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="label">Sismos M≥4.0 (30d)</div>
+                        <div class="value" id="kpiCount">8</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="label">Lluvia acumulada (Costa, 7d)</div>
+                        <div class="value" id="kpiRain">132 mm</div>
+                    </div>
+                    <div class="kpi">
+                        <div class="label">Alertas activas</div>
+                        <div class="value" id="kpiAlerts">2</div>
+                    </div>
+                </div>
+                <div class="grid">
+                    <div class="card">
+                        <h3>Tendencia sísmica vs. precipitación</h3>
+                        <div class="legend">
+                            <span><span class="swatch"></span>Sismos (conteo diario)</span>
+                            <span><span class="swatch" style="background: var(--accent2)"></span>Precipitación
+                                (mm)</span>
+                        </div>
+                        <svg id="lineChart" class="chart" viewBox="0 0 600 220" preserveAspectRatio="none"
+                            aria-label="Línea temporal sismos y lluvia"></svg>
+                    </div>
+                    <div class="card">
+                        <h3>Distribución espacial (riesgo simulado)</h3>
+                        <div class="map" id="map"></div>
+                        <div class="footer">Capas: <span class="chip">Fallas</span> <span class="chip">Sismicidad</span>
+                            <span class="chip">Índice hídrico</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mapa -->
+            <section id="view-mapa" hidden>
+                <div class="card">
+                    <h3>Mapa de riesgo</h3>
+                    <div class="map" id="map2"
+                        style="background:none; overflow:auto; max-height:420px; border:1px solid #1f2937; border-radius:10px;">
+                        <img src="Figura-52-Mapa-de-multi-riesgo-por-inundacion-sequia-y-helada-del-sector-agropecuario.png"
+                            alt="Mapa de riesgo sísmico"
+                            style="width:auto; max-width:100%; height:auto; display:block;">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Datos -->
+            <section id="view-datos" hidden>
+                <div class="card">
+                    <h3>Explorador de datos</h3>
+                    <p style="color:#cbd5e1;font-size:14px;margin-top:0">Vista de muestra con registros agregados.
+                        Descarga simulada en CSV.</p>
+                    <div id="table" style="max-height:320px;overflow:auto;border:1px solid #1f2937;border-radius:10px">
+                        <table style="width:100%;border-collapse:collapse;font-size:13px">
+                            <thead>
+                                <tr style="position:sticky;top:0;background:#0b1220">
+                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Fecha</th>
+                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Región</th>
+                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937"># Sismos M≥4
+                                    </th>
+                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Lluvia (mm)
+                                    </th>
+                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Presión
+                                        (hPa)</th>
+                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Índice de
+                                        riesgo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:10px">
+                        <button id="btnCSV"
+                            style="background:#60a5fa;border:0;color:#071018;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer">Descargar
+                            CSV</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alertas -->
+            <section id="view-alertas" hidden>
+                <div class="card">
+                    <h3>Alertas activas</h3>
+                    <ul id="alerts" style="list-style:none;padding-left:0;margin-top:8px"></ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>

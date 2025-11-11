@@ -1,0 +1,293 @@
+:root {
+    --bg: #0f172a;
+    /* slate-900 */
+    --panel: #111827;
+    /* gray-900 */
+    --muted: #94a3b8;
+    /* slate-400 */
+    --text: #e5e7eb;
+    /* gray-200 */
+    --accent: #22d3ee;
+    /* cyan-400 */
+    --accent2: #f59e0b;
+    /* amber-500 */
+    --good: #34d399;
+    /* green-400 */
+    --bad: #f87171;
+    /* red-400 */
+    --card: #0b1220;
+    --chip: #1f2937;
+}
+
+* {
+    box-sizing: border-box
+}
+
+html,
+body {
+    height: 100%
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(120deg, #0b1020 0%, #0f172a 50%, #111827 100%);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid #1f2937;
+    position: sticky;
+    top: 0;
+    background: rgba(11, 16, 32, .85);
+    backdrop-filter: blur(6px);
+    z-index: 5;
+}
+
+header .logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: radial-gradient(circle at 30% 30%, var(--accent), #0ea5e9 60%, #111827 100%);
+    border: 1px solid #334155;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, .15), 0 6px 20px rgba(0, 0, 0, .35);
+}
+
+header h1 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: .3px
+}
+
+header .subtitle {
+    color: var(--muted);
+    font-size: 12px
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+    padding: 16px;
+    min-height: calc(100% - 62px)
+}
+
+nav {
+    background: var(--panel);
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+    padding: 12px;
+    height: calc(100vh - 100px);
+    position: sticky;
+    top: 80px;
+    overflow: auto;
+}
+
+nav .section {
+    margin-bottom: 14px
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #1f2937;
+    background: linear-gradient(160deg, #0b1220, #0f172a);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin: 6px 0;
+    cursor: pointer;
+    user-select: none;
+    transition: transform .08s ease, border-color .2s ease;
+}
+
+.tab:hover {
+    transform: translateY(-1px);
+    border-color: #334155
+}
+
+.tab.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, .12) inset
+}
+
+.tab .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent)
+}
+
+.chip {
+    display: inline-block;
+    margin: 4px 6px 0 0;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--chip);
+    border: 1px solid #1f2937;
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+main {
+    background: var(--panel);
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+    padding: 14px;
+    overflow: hidden;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #1f2937;
+    padding: 10px 6px 14px 6px;
+    margin: 0 -6px 10px -6px;
+}
+
+.toolbar input,
+.toolbar select {
+    background: #0b1220;
+    border: 1px solid #1f2937;
+    color: #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 10px;
+    outline: none;
+}
+
+.toolbar label {
+    font-size: 12px;
+    color: #cbd5e1
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap: 14px;
+}
+
+.card {
+    background: linear-gradient(180deg, #0b1220, #0f172a);
+    border: 1px solid #1f2937;
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.card h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px
+}
+
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 6px 0 12px
+}
+
+.kpi {
+    background: var(--card);
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.kpi .label {
+    font-size: 12px;
+    color: #cbd5e1
+}
+
+.kpi .value {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    margin-top: 4px
+}
+
+.legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #cbd5e1
+}
+
+.legend .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-right: 6px;
+    background: #22d3ee
+}
+
+/* SVG charts */
+.chart {
+    width: 100%;
+    height: 220px;
+    background: #0b1220;
+    border: 1px solid #1f2937;
+    border-radius: 10px;
+    padding: 8px
+}
+
+/* Map placeholder */
+.map {
+    width: 100%;
+    height: 380px;
+    background: radial-gradient(100% 100% at 30% 20%, #0b1533 0%, #0b1220 60%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .04) 0 1px, rgba(255, 255, 255, 0) 1px 18px);
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.map::after {
+    content: \"Mapa (Ecuador) — Placeholder\";
+    position: absolute;
+    inset: auto auto 14px 14px;
+    color: #94a3b8;
+    font-size: 12px;
+    background: #0b1220;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid #1f2937;
+}
+
+.badge {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid #1f2937;
+    background: #0b1220;
+    color: #cbd5e1
+}
+
+.footer {
+    margin-top: 8px;
+    color: #94a3b8;
+    font-size: 12px
+}
+
+@media (max-width: 1000px) {
+    .container {
+        grid-template-columns: 1fr
+    }
+
+    nav {
+        position: relative;
+        height: auto;
+        top: auto
+    }
+
+    .grid {
+        grid-template-columns: 1fr
+    }
+}
