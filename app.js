@@ -101,6 +101,25 @@ function renderAlerts() {
         </li>`;
 }
 renderAlerts();
+// === Permitir que al hacer clic en una alerta se abra el mapa ===
+document.addEventListener('click', (e) => {
+    const alerta = e.target.closest('#alerts li');
+    if (alerta) {
+        // Quita la clase 'active' de todas las pestañas
+        tabs.forEach(tab => tab.classList.remove('active'));
+
+        // Activa la pestaña "Mapa de Riesgo"
+        const mapaTab = document.querySelector('.tab[data-tab="mapa"]');
+        mapaTab.classList.add('active');
+
+        // Oculta todas las vistas
+        Object.values(views).forEach(v => v.hidden = true);
+
+        // Muestra solo el mapa
+        views.mapa.hidden = false;
+    }
+});
+
 
 // CSV
 document.getElementById('btnCSV').addEventListener('click', () => {
