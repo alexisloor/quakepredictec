@@ -70,7 +70,7 @@ function drawLineChart() {
 drawLineChart();
 
 // Table
-const regiones = ['Costa', 'Sierra', 'Oriente', 'Insular'];
+/*const regiones = ['Costa', 'Sierra', 'Oriente', 'Insular'];
 function genRow(i) {
     const fecha = new Date(Date.now() - (i * 86400000)).toISOString().slice(0, 10);
     const reg = regiones[i % regiones.length];
@@ -88,6 +88,104 @@ function genRow(i) {
       </tr>`
 }
 document.getElementById('rows').innerHTML = Array.from({ length: 40 }, (_, i) => genRow(i)).join('');
+*/
+// ====== Datos (dinámico): dataset + filtros + orden + paginación ======
+const regiones = ['Costa', 'Sierra', 'Oriente', 'Insular']; // reutilizamos
+function makeRecord(i) {
+  const d = new Date(Date.now() - (i * 86400000));         // i días hacia atrás
+  const fecha = d.toISOString().slice(0, 10);               // YYYY-MM-DD
+  const region = regiones[i % regiones.length];
+  const sismos = Math.max(0, Math.round(rand(0, 5) + (region === 'Costa' ? 1 : 0)));
+  const lluvia = Math.round(rand(0, 150));
+  const presion = Math.round(1000 + rand(-18, 18));
+  const riesgo = +(10 + rand(-3, 6)).toFixed(1);            // %
+  return { fecha, region, sismos, lluvia, presion, riesgo };
+}
+
+// Dataset sintético (120 días)
+const records = Array.from({ length: 120 }, (_, i) => makeRecord(i));
+
+let sortBy = 'fecha';
+let sortDir = 'desc';
+const PAGE = 12;
+let page = 1;
+
+// Helpers de filtros
+function applyFilters() {
+  const q = document.getElementById('fSearch')?.value.trim().toLowerCase() || '';
+  const reg = document.getElementById('fRegion')?.value || 'all';
+  const minRain = +document.getElementById('fMinRain')?.value || 0;
+  const maxRain = +document.getElementById('fMaxRain')?.value || Infinity;
+  const dStart = document.getElementById('fStart')?.value || '';
+  const dEnd   = document.getElementById('fEnd')?.value || '';
+
+  return records.filter(r => {
+    const okRegion = reg === 'all' || r.region === reg;
+    const okSearch = !q || (r.region.toLowerCase().includes(q) || r.fecha.includes(q));
+    const okRain   = r.lluvia >= minRain && r.lluvia <= maxRain;
+    const okDate   = (!dStart || r.fecha >= dStart) && (!dEnd || r.fecha <= dEnd);
+    return okRegion && okSearch && okRain && okDate;
+  });
+}
+
+function sortData(arr) {
+  return arr.sort((a, b) => {
+    const A = a[sortBy], B = b[sortBy];
+    const cmp = (A > B) ? 1 : (A < B) ? -1 : 0;
+    return (sortDir === 'asc') ? cmp : -cmp;
+  });
+}
+
+function renderTable() {
+    const filtered = sortData(applyFilters());
+    const total = filtered.length;
+    const start = (page - 1) * PAGE;
+    const slice = filtered.slice(start, start + PAGE);
+
+    document.getElementById('rows').innerHTML = slice.map(r => `
+        <tr>
+        <td style="padding:8px;border-bottom:1px solid #1f2937">${r.fecha}</td>
+        <td style="padding:8px;border-bottom:1px solid #1f2937">${r.region}</td>
+        <td style="padding:8px;border-bottom:1px solid #1f2937">${r.sismos}</td>
+        <td style="padding:8px;border-bottom:1px solid #1f2937">${r.lluvia}</td>
+        <td style="padding:8px;border-bottom:1px solid #1f2937">${r.presion}</td>
+        <td style="padding:8px;border-bottom:1px solid #1f2937">${r.riesgo}%</td>
+        </tr>
+    `).join('');
+
+    const countEl = document.getElementById('count');
+    if (countEl) countEl.textContent = total
+        ? `${start + 1}-${Math.min(start + PAGE, total)} de ${total}`
+        : `0 de 0`;
+
+    const prev = document.getElementById('btnPrev');
+    const next = document.getElementById('btnNext');
+    if (prev) prev.disabled = page === 1;
+    if (next) next.disabled = start + PAGE >= total;
+    }
+
+    ['fSearch','fRegion','fMinRain','fMaxRain','fStart','fEnd'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => { page = 1; renderTable(); });
+    });
+
+    const prevBtn = document.getElementById('btnPrev');
+    const nextBtn = document.getElementById('btnNext');
+    if (prevBtn) prevBtn.addEventListener('click', () => { if (page > 1) { page--; renderTable(); } });
+    if (nextBtn) nextBtn.addEventListener('click', () => { page++; renderTable(); });
+
+    document.querySelectorAll('[data-sort]').forEach(th => {
+    th.style.cursor = 'pointer';
+    th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (sortBy === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
+        else { sortBy = key; sortDir = 'asc'; }
+        page = 1; renderTable();
+    });
+});
+
+// Primer pintado
+renderTable();
 
 // Alerts
 const alertsEl = document.getElementById('alerts');
@@ -101,6 +199,7 @@ function renderAlerts() {
         </li>`;
 }
 renderAlerts();
+
 // === Permitir que al hacer clic en una alerta se abra el mapa ===
 document.addEventListener('click', (e) => {
     const alerta = e.target.closest('#alerts li');

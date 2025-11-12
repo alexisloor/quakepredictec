@@ -104,6 +104,43 @@
 
             <!-- Datos -->
             <section id="view-datos" hidden>
+                <!-- Filtros para el explorador -->
+                <div class="toolbar" style="margin-top:0">
+                    <div>
+                        <label>Buscar</label><br>
+                        <input id="fSearch" placeholder="fecha o región">
+                    </div>
+                    <div>
+                        <label>Región</label><br>
+                        <select id="fRegion">
+                        <option value="all">Todas</option>
+                        <option value="Costa">Costa</option>
+                        <option value="Sierra">Sierra</option>
+                        <option value="Oriente">Oriente</option>
+                        <option value="Insular">Insular</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Fecha inicio</label><br>
+                        <input type="date" id="fStart">
+                    </div>
+                    <div>
+                        <label>Fecha fin</label><br>
+                        <input type="date" id="fEnd">
+                    </div>
+                    <div>
+                        <label>Lluvia (mm)</label><br>
+                        <input type="number" id="fMinRain" placeholder="min" style="width:90px"> —
+                        <input type="number" id="fMaxRain" placeholder="max" style="width:90px">
+                    </div>
+
+                    <div style="align-self:end;margin-left:auto;display:flex;gap:6px;align-items:center">
+                        <span class="badge" id="count">0</span>
+                        <button id="btnPrev" class="chip">Anterior</button>
+                        <button id="btnNext" class="chip">Siguiente</button>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h3>Explorador de datos</h3>
                     <p style="color:#cbd5e1;font-size:14px;margin-top:0">Vista de muestra con registros agregados.
@@ -112,16 +149,12 @@
                         <table style="width:100%;border-collapse:collapse;font-size:13px">
                             <thead>
                                 <tr style="position:sticky;top:0;background:#0b1220">
-                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Fecha</th>
-                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Región</th>
-                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937"># Sismos M≥4
-                                    </th>
-                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Lluvia (mm)
-                                    </th>
-                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Presión
-                                        (hPa)</th>
-                                    <th style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Índice de
-                                        riesgo</th>
+                                    <th data-sort="fecha"   style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Fecha ⬍</th>
+                                    <th data-sort="region"  style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Región</th>
+                                    <th data-sort="sismos"  style="text-align:left;padding:8px;border-bottom:1px solid #1f2937"># Sismos M≥4</th>
+                                    <th data-sort="lluvia"  style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Lluvia (mm)</th>
+                                    <th data-sort="presion" style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Presión (hPa)</th>
+                                    <th data-sort="riesgo"  style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Índice de riesgo</th>
                                 </tr>
                             </thead>
                             <tbody id="rows"></tbody>
