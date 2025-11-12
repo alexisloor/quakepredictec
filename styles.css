@@ -1,293 +1,377 @@
+/* =========================
+   Temas (oscuro y claro)
+   ========================= */
+
+/* Oscuro (por defecto) */
 :root {
-    --bg: #0f172a;
-    /* slate-900 */
-    --panel: #111827;
-    /* gray-900 */
-    --muted: #94a3b8;
-    /* slate-400 */
-    --text: #e5e7eb;
-    /* gray-200 */
-    --accent: #22d3ee;
-    /* cyan-400 */
-    --accent2: #f59e0b;
-    /* amber-500 */
-    --good: #34d399;
-    /* green-400 */
-    --bad: #f87171;
-    /* red-400 */
-    --card: #0b1220;
-    --chip: #1f2937;
+  --bg1: #0b1020;
+  --bg2: #0f172a;
+  --bg3: #111827;
+
+  --panel: #111827;
+  --muted: #94a3b8;
+  --text: #e5e7eb;
+  --accent: #22d3ee;
+  --accent2: #f59e0b;
+
+  --good: #34d399;
+  --bad: #f87171;
+
+  --card: #0b1220;
+  --chip: #1f2937;
+
+  --border: #1f2937;
+  --shadow: rgba(0, 0, 0, .35);
 }
 
-* {
-    box-sizing: border-box
+/* Claro */
+:root[data-theme="light"] {
+  --bg1: #ffffff;
+  --bg2: #f7fafc;
+  --bg3: #eef2f7;
+
+  --panel: #ffffff;
+  --muted: #475569;
+  --text: #0f172a;
+  --accent: #0ea5e9;
+  --accent2: #d97706;
+
+  --good: #16a34a;
+  --bad: #dc2626;
+
+  --card: #f8fafc;          /* tarjetas/inputs claros */
+  --chip: #e9eef5;          /* chips claros */
+
+  --border: #cbd5e1;        /* borde claro */
+  --shadow: rgba(15, 23, 42, .07);
 }
 
-html,
+/* =========================
+   Reset & layout base
+   ========================= */
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
 body {
-    height: 100%
+  margin: 0;
+  background: linear-gradient(120deg, var(--bg1) 0%, var(--bg2) 50%, var(--bg3) 100%);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
 }
 
-body {
-    margin: 0;
-    background: linear-gradient(120deg, #0b1020 0%, #0f172a 50%, #111827 100%);
-    color: var(--text);
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
-}
+/* =========================
+   Header
+   ========================= */
 
 header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 20px;
-    border-bottom: 1px solid #1f2937;
-    position: sticky;
-    top: 0;
-    background: rgba(11, 16, 32, .85);
-    backdrop-filter: blur(6px);
-    z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+  z-index: 5;
 }
 
 header .logo {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    background: radial-gradient(circle at 30% 30%, var(--accent), #0ea5e9 60%, #111827 100%);
-    border: 1px solid #334155;
-    box-shadow: 0 0 0 2px rgba(34, 211, 238, .15), 0 6px 20px rgba(0, 0, 0, .35);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: radial-gradient(circle at 30% 30%, var(--accent), color-mix(in oklab, var(--accent), #0ea5e9 40%) 60%, var(--panel) 100%);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 20%, transparent), 0 6px 20px var(--shadow);
 }
 
 header h1 {
-    font-size: 18px;
-    margin: 0;
-    font-weight: 700;
-    letter-spacing: .3px
+  font-size: 18px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: .3px;
 }
 
 header .subtitle {
-    color: var(--muted);
-    font-size: 12px
+  color: var(--muted);
+  font-size: 12px;
 }
 
+/* =========================
+   App layout
+   ========================= */
+
 .container {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 16px;
-    padding: 16px;
-    min-height: calc(100% - 62px)
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  padding: 16px;
+  min-height: calc(100% - 62px);
 }
 
 nav {
-    background: var(--panel);
-    border: 1px solid #1f2937;
-    border-radius: 14px;
-    padding: 12px;
-    height: calc(100vh - 100px);
-    position: sticky;
-    top: 80px;
-    overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  height: calc(100vh - 100px);
+  position: sticky;
+  top: 80px;
+  overflow: auto;
 }
 
-nav .section {
-    margin-bottom: 14px
-}
+nav .section { margin-bottom: 14px; }
+
+/* =========================
+   Tabs laterales
+   ========================= */
 
 .tab {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border: 1px solid #1f2937;
-    background: linear-gradient(160deg, #0b1220, #0f172a);
-    border-radius: 12px;
-    padding: 10px 12px;
-    margin: 6px 0;
-    cursor: pointer;
-    user-select: none;
-    transition: transform .08s ease, border-color .2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, var(--card), var(--panel));
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 6px 0;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .08s ease, border-color .2s ease, box-shadow .2s ease;
+  color: var(--text);
 }
 
 .tab:hover {
-    transform: translateY(-1px);
-    border-color: #334155
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--accent) 30%, var(--border));
 }
 
 .tab.active {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(34, 211, 238, .12) inset
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 20%, transparent) inset, 0 6px 16px var(--shadow);
 }
 
 .tab .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent)
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
 }
+
+/* =========================
+   Chips / Badges
+   ========================= */
 
 .chip {
-    display: inline-block;
-    margin: 4px 6px 0 0;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: var(--chip);
-    border: 1px solid #1f2937;
-    color: #cbd5e1;
-    font-size: 12px;
+  display: inline-block;
+  margin: 4px 6px 0 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--chip);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
 }
+
+.badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+}
+
+/* =========================
+   Main panel
+   ========================= */
 
 main {
-    background: var(--panel);
-    border: 1px solid #1f2937;
-    border-radius: 14px;
-    padding: 14px;
-    overflow: hidden;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  overflow: hidden;
 }
 
+/* Toolbar superior de filtros/fechas */
 .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    border-bottom: 1px solid #1f2937;
-    padding: 10px 6px 14px 6px;
-    margin: 0 -6px 10px -6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 6px 14px 6px;
+  margin: 0 -6px 10px -6px;
 }
 
 .toolbar input,
 .toolbar select {
-    background: #0b1220;
-    border: 1px solid #1f2937;
-    color: #e5e7eb;
-    border-radius: 10px;
-    padding: 8px 10px;
-    outline: none;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline: none;
 }
 
-.toolbar label {
-    font-size: 12px;
-    color: #cbd5e1
-}
+.toolbar label { font-size: 12px; color: var(--muted); }
+
+/* =========================
+   Grid contenidos
+   ========================= */
 
 .grid {
-    display: grid;
-    grid-template-columns: 1.2fr .8fr;
-    gap: 14px;
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 14px;
 }
 
 .card {
-    background: linear-gradient(180deg, #0b1220, #0f172a);
-    border: 1px solid #1f2937;
-    border-radius: 14px;
-    padding: 12px;
+  background: linear-gradient(180deg, var(--card), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 8px 20px var(--shadow);
 }
 
-.card h3 {
-    margin: 0 0 8px 0;
-    font-size: 15px
-}
+.card h3 { margin: 0 0 8px 0; font-size: 15px; }
 
+/* KPIs */
 .kpis {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin: 6px 0 12px
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 6px 0 12px;
 }
 
 .kpi {
-    background: var(--card);
-    border: 1px solid #1f2937;
-    border-radius: 12px;
-    padding: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
 }
 
-.kpi .label {
-    font-size: 12px;
-    color: #cbd5e1
-}
+.kpi .label { font-size: 12px; color: var(--muted); }
+.kpi .value { font-size: 22px; font-weight: 800; letter-spacing: .5px; margin-top: 4px; }
 
-.kpi .value {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: .5px;
-    margin-top: 4px
-}
-
+/* Leyenda de gráficos */
 .legend {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    font-size: 12px;
-    color: #cbd5e1
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .legend .swatch {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    display: inline-block;
-    margin-right: 6px;
-    background: #22d3ee
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-right: 6px;
+  background: var(--accent);
 }
 
-/* SVG charts */
+/* =========================
+   SVG charts
+   ========================= */
+
 .chart {
-    width: 100%;
-    height: 220px;
-    background: #0b1220;
-    border: 1px solid #1f2937;
-    border-radius: 10px;
-    padding: 8px
+  width: 100%;
+  height: 220px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
 }
 
-/* Map placeholder */
+/* =========================
+   Mapa (contenedor placeholder)
+   ========================= */
+
 .map {
-    width: 100%;
-    height: 380px;
-    background: radial-gradient(100% 100% at 30% 20%, #0b1533 0%, #0b1220 60%), repeating-linear-gradient(0deg, rgba(255, 255, 255, .04) 0 1px, rgba(255, 255, 255, 0) 1px 18px);
-    border: 1px solid #1f2937;
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
+  width: 100%;
+  height: 380px;
+  background:
+    radial-gradient(100% 100% at 30% 20%, color-mix(in oklab, var(--card), #6aa3ff 12%) 0%, var(--card) 60%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.04) 0 1px, rgba(0,0,0,0) 1px 18px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
 }
 
 .map::after {
-    content: \"Mapa (Ecuador) — Placeholder\";
-    position: absolute;
-    inset: auto auto 14px 14px;
-    color: #94a3b8;
-    font-size: 12px;
-    background: #0b1220;
-    padding: 6px 8px;
-    border-radius: 8px;
-    border: 1px solid #1f2937;
+  content: "Mapa (Ecuador) — Placeholder";
+  position: absolute;
+  inset: auto auto 14px 14px;
+  color: var(--muted);
+  font-size: 12px;
+  background: var(--card);
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
 }
 
-.badge {
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 999px;
-    border: 1px solid #1f2937;
-    background: #0b1220;
-    color: #cbd5e1
-}
+/* =========================
+   Tabla (mejor contraste en claro)
+   ========================= */
 
-.footer {
-    margin-top: 8px;
-    color: #94a3b8;
-    font-size: 12px
-}
+thead tr { background: var(--card) !important; }
+tbody td { color: var(--text); }
+
+/* =========================
+   Responsivo
+   ========================= */
 
 @media (max-width: 1000px) {
-    .container {
-        grid-template-columns: 1fr
-    }
-
-    nav {
-        position: relative;
-        height: auto;
-        top: auto
-    }
-
-    .grid {
-        grid-template-columns: 1fr
-    }
+  .container { grid-template-columns: 1fr; }
+  nav { position: relative; height: auto; top: auto; }
+  .grid { grid-template-columns: 1fr; }
 }
+/* ===== Alertas (modo claro/oscuro) ===== */
+.alert-list{
+  list-style:none;
+  padding-left:0;
+  margin-top:8px;
+}
+
+.alert-item{
+  margin:8px 0;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:var(--card);
+  color:var(--text);
+  box-shadow:0 4px 10px var(--shadow);
+}
+
+.alert-item:hover{
+  box-shadow:0 8px 18px var(--shadow);
+}
+
+.alert-badge{
+  display:inline-block;
+  margin-left:8px;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  border:1px solid;
+  background:transparent;
+}
+
+/* Variantes */
+.alert-badge.warn{
+  border-color:var(--accent2);
+  color:var(--accent2);
+  background:color-mix(in oklab, var(--accent2), transparent 92%);
+}
+
+.alert-badge.info{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:color-mix(in oklab, var(--accent), transparent 92%);
+}
+

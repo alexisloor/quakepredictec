@@ -188,17 +188,26 @@ function renderTable() {
 renderTable();
 
 // Alerts
+// Alerts
 const alertsEl = document.getElementById('alerts');
+
 function renderAlerts() {
+    // asegúrate de aplicar la clase a la lista
+    alertsEl.classList.add('alert-list');
+
     alertsEl.innerHTML = `
-        <li style='margin:8px 0;padding:10px;border:1px solid #1f2937;border-radius:10px;background:#0b1220'>
-          <strong>Costa norte</strong> — Riesgo alto en 7 días (umbral > 12%). <span class='badge' style='border-color:#f59e0b;color:#f59e0b'>Lluvia 150mm/7d</span>
+        <li class="alert-item">
+        <strong>Costa norte</strong> — Riesgo alto en 7 días (umbral > 12%).
+        <span class="alert-badge warn">Lluvia 150mm/7d</span>
         </li>
-        <li style='margin:8px 0;padding:10px;border:1px solid #1f2937;border-radius:10px;background:#0b1220'>
-          <strong>Sierra centro</strong> — Riesgo moderado. <span class='badge' style='border-color:#22d3ee;color:#22d3ee'>Sismicidad local ↑</span>
-        </li>`;
+        <li class="alert-item">
+        <strong>Sierra centro</strong> — Riesgo moderado.
+        <span class="alert-badge info">Sismicidad local ↑</span>
+        </li>
+    `;
 }
 renderAlerts();
+
 
 // === Permitir que al hacer clic en una alerta se abra el mapa ===
 document.addEventListener('click', (e) => {
@@ -218,6 +227,34 @@ document.addEventListener('click', (e) => {
         views.mapa.hidden = false;
     }
 });
+
+// ===  Modo claro / oscuro con persistencia ===
+const root = document.documentElement;
+const btnTheme = document.getElementById('btnTheme');
+
+(function initTheme() {
+  const saved = localStorage.getItem('theme'); // 'light' | 'dark' | null
+  if (saved) {
+    root.dataset.theme = saved;
+    if (btnTheme) btnTheme.textContent = saved === 'light' ? '🌞 Modo claro' : '🌙 Modo oscuro';
+  } else {
+    // primera vez: respeta la preferencia del sistema
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      root.dataset.theme = 'light';
+      if (btnTheme) btnTheme.textContent = '🌞 Modo claro';
+    }
+  }
+})();
+
+if (btnTheme) {
+  btnTheme.addEventListener('click', () => {
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    root.dataset.theme = next;
+    localStorage.setItem('theme', next);
+    btnTheme.textContent = next === 'light' ? '🌞 Modo claro' : '🌙 Modo oscuro';
+  });
+}
+
 
 
 // CSV
