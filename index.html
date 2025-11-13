@@ -11,7 +11,7 @@
 
 <body>
     <header>
-        <div class="logo" aria-hidden="true"></div>
+        <img class="logo" src="logo.jpg" alt="QuakePredictEC" style="height:50px;width:50px;border-radius:10px;margin-right:10px" />
         <div>
             <h1>QuakePredictEC</h1>
             <div class="subtitle">Análisis y predicción de sismos asociados a variación climática en Ecuador</div>
@@ -42,10 +42,34 @@
             <!-- Mapa -->
             <section id="view-mapa">
                 <div class="toolbar">
-                    <div>
-                        <label>Rango de fechas</label><br />
-                        <input type="date" id="start"> <input type="date" id="end">
-                    </div>
+                    <label for="fProvincia">Provincia</label><br />
+                    <select id="fProvincia">
+                        <option value="all">Todas</option>
+                        <option>Azuay</option>
+                        <option>Bolívar</option>
+                        <option>Cañar</option>
+                        <option>Carchi</option>
+                        <option>Chimborazo</option>
+                        <option>Cotopaxi</option>
+                        <option>El Oro</option>
+                        <option>Esmeraldas</option>
+                        <option>Galápagos</option>
+                        <option>Guayas</option>
+                        <option>Imbabura</option>
+                        <option>Loja</option>
+                        <option>Los Ríos</option>
+                        <option>Manabí</option>
+                        <option>Morona Santiago</option>
+                        <option>Napo</option>
+                        <option>Orellana</option>
+                        <option>Pastaza</option>
+                        <option>Pichincha</option>
+                        <option>Santa Elena</option>
+                        <option>Santo Domingo de los Tsáchilas</option>
+                        <option>Sucumbíos</option>
+                        <option>Tungurahua</option>
+                        <option>Zamora Chinchipe</option>
+                    </select>
                 </div>
                 <div class="card">
                     <h3>Mapa de riesgo</h3>
@@ -103,7 +127,7 @@
                                     <th data-sort="region"
                                         style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Región</th>
                                     <th data-sort="sismos"
-                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937"># Sismos M≥4
+                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Magnitud
                                     </th>
                                     <th data-sort="lluvia"
                                         style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Lluvia (mm)
