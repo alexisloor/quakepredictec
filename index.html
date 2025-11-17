@@ -11,7 +11,8 @@
 
 <body>
     <header>
-        <img class="logo" src="logo.jpg" alt="QuakePredictEC" style="height:50px;width:50px;border-radius:10px;margin-right:10px" />
+        <img class="logo" src="logo.jpg" alt="QuakePredictEC"
+            style="height:50px;width:50px;border-radius:10px;margin-right:10px" />
         <div>
             <h1>QuakePredictEC</h1>
             <div class="subtitle">Análisis y predicción de sismos asociados a variación climática en Ecuador</div>
@@ -20,25 +21,42 @@
         <button id="btnTheme" class="chip" style="margin-left:auto;cursor:pointer;">
             🌙 Modo oscuro
         </button>
-
     </header>
 
     <div class="container">
         <nav>
             <div class="section">
-                <div class="tab" data-tab="mapa"><span class="dot" style="background: var(--accent2)"></span>
+
+                <!-- TAB MAPA -->
+                <div class="tab" data-tab="mapa">
+                    <span class="dot" style="background: var(--accent2)"></span>
                     <div>Mapa de Riesgo</div>
                 </div>
-                <div class="tab" data-tab="datos"><span class="dot" style="background: #60a5fa"></span>
+
+                <!-- TAB REPORTES -->
+                <div class="tab" data-tab="datos">
+                    <span class="dot" style="background: #60a5fa"></span>
                     <div>Reportes del Modelo</div>
                 </div>
-                <div class="tab" data-tab="alertas"><span class="dot" style="background: #f87171"></span>
-                    <div>Alertas</div>
+
+                <!-- TAB ALERTAS (CON BADGE ROJO) -->
+                <div class="tab" data-tab="alertas">
+                    <span class="dot" style="background: #f87171"></span>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        Alertas
+                        <span id="alertBadge" class="badge"
+                              style="background:#ef4444;color:white;padding:2px 6px;border-radius:10px;
+                              font-size:12px;font-weight:700;display:none;">
+                            1
+                        </span>
+                    </div>
                 </div>
+
             </div>
         </nav>
 
         <main>
+
             <!-- Mapa -->
             <section id="view-mapa">
                 <div class="toolbar">
@@ -71,6 +89,7 @@
                         <option>Zamora Chinchipe</option>
                     </select>
                 </div>
+
                 <div class="card">
                     <h3>Mapa de riesgo</h3>
                     <div id="map-ec" style="height:480px;border:1px solid #1f2937;border-radius:10px"></div>
@@ -79,7 +98,6 @@
 
             <!-- Datos -->
             <section id="view-datos" hidden>
-                <!-- Filtros para el explorador -->
                 <div class="toolbar" style="margin-top:0">
                     <div>
                         <label>Buscar</label><br>
@@ -105,11 +123,13 @@
                     </div>
                     <div>
                         <label>Lluvia (mm)</label><br>
-                        <input type="number" id="fMinRain" placeholder="min" style="width:90px"> —
+                        <input type="number" id="fMinRain" placeholder="min" style="width:90px">
+                        —
                         <input type="number" id="fMaxRain" placeholder="max" style="width:90px">
                     </div>
 
-                    <div style="align-self:end;margin-left:auto;display:flex;gap:6px;align-items:center">
+                    <div
+                        style="align-self:end;margin-left:auto;display:flex;gap:6px;align-items:center">
                         <span class="badge" id="count">0</span>
                         <button id="btnPrev" class="chip">Anterior</button>
                         <button id="btnNext" class="chip">Siguiente</button>
@@ -118,26 +138,29 @@
 
                 <div class="card">
                     <h3>Reportes del Modelo</h3>
-                    <div id="table" style="max-height:320px;overflow:auto;border:1px solid #1f2937;border-radius:10px">
+                    <div id="table"
+                        style="max-height:320px;overflow:auto;border:1px solid #1f2937;border-radius:10px">
                         <table style="width:100%;border-collapse:collapse;font-size:13px">
                             <thead>
                                 <tr style="position:sticky;top:0;background:#0b1220">
                                     <th data-sort="fecha"
-                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Fecha ⬍</th>
+                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">
+                                        Fecha ⬍</th>
                                     <th data-sort="region"
-                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Región</th>
+                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">
+                                        Región</th>
                                     <th data-sort="sismos"
-                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Magnitud
-                                    </th>
+                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">
+                                        Magnitud</th>
                                     <th data-sort="lluvia"
-                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Lluvia (mm)
-                                    </th>
+                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">
+                                        Lluvia (mm)</th>
                                     <th data-sort="presion"
-                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Presión
-                                        (hPa)</th>
+                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">
+                                        Presión (hPa)</th>
                                     <th data-sort="riesgo"
-                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">Índice de
-                                        riesgo</th>
+                                        style="text-align:left;padding:8px;border-bottom:1px solid #1f2937">
+                                        Índice de riesgo</th>
                                 </tr>
                             </thead>
                             <tbody id="rows"></tbody>
@@ -145,8 +168,9 @@
                     </div>
                     <div style="margin-top:10px">
                         <button id="btnCSV"
-                            style="background:#60a5fa;border:0;color:#071018;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer">Descargar
-                            CSV</button>
+                            style="background:#60a5fa;border:0;color:#071018;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer">
+                            Descargar CSV
+                        </button>
                     </div>
                 </div>
             </section>
@@ -155,12 +179,21 @@
             <section id="view-alertas" hidden>
                 <div class="card">
                     <h3>Alertas activas</h3>
-                    <ul id="alerts" style="list-style:none;padding-left:0;margin-top:8px"></ul>
+
+                    <!-- BOTÓN PARA CREAR UNA NUEVA ALERTA -->
+                    <button id="btnSimularAlerta" class="chip"
+                        style="margin-top:8px;margin-bottom:8px;">
+                        Simular alerta
+                    </button>
+
+                    <ul id="alerts"
+                        style="list-style:none;padding-left:0;margin-top:8px"></ul>
                 </div>
             </section>
 
         </main>
     </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
 </body>
