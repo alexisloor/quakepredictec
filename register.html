@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>QuakePredictEC — Registro</title>
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: linear-gradient(120deg, var(--bg1) 0%, var(--bg2) 50%, var(--bg3) 100%);
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--panel);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 30px var(--shadow);
+      padding: 22px;
+    }
+
+    .login-card h1 {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .login-card input {
+      width: 100%;
+      padding: 9px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+    }
+
+    .login-card button {
+      width: 100%;
+      padding: 11px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+      color: #020617;
+    }
+
+    .login-error {
+      color: #f87171;
+      font-size: 12px;
+      text-align: center;
+      margin-top: 6px;
+      min-height: 16px;
+    }
+
+    .login-links {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .login-links a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    /* ===== MODAL EMERGENTE ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-card {
+      background: linear-gradient(145deg,#0f172a,#020617);
+      padding: 26px;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 25px 60px rgba(0,0,0,.6);
+      animation: modalPop .35s ease;
+    }
+
+    .modal-icon {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .modal-card h2 {
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .modal-card p {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .modal-card button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    @keyframes modalPop {
+      from { transform: scale(.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <h1>Registro</h1>
+
+    <form id="registerForm">
+      <input type="text" id="nombre" placeholder="Nombre" required>
+      <input type="text" id="apellido" placeholder="Apellido" required>
+      <input type="text" id="usuario" placeholder="Usuario (nickname)" required>
+      <input type="email" id="correo" placeholder="Correo electrónico" required>
+
+      <input type="password" id="password" placeholder="Contraseña" required>
+      <input type="password" id="password2" placeholder="Repetir contraseña" required>
+
+      <button type="submit">Registrarse</button>
+    </form>
+
+    <div id="registerError" class="login-error"></div>
+
+    <div class="login-links">
+      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+    </div>
+
+  </div>
+</div>
+
+<!--  MODAL REGISTRO EXITOSO -->
+<div id="successModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-icon"></div>
+    <h2>Registro exitoso</h2>
+    <p>Tu cuenta fue creada correctamente.<br>Ahora puedes iniciar sesión.</p>
+    <button id="btnGoLogin">Iniciar sesión</button>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById("registerForm");
+  const errorBox = document.getElementById("registerError");
+
+  const modal = document.getElementById("successModal");
+  const btnGoLogin = document.getElementById("btnGoLogin");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const nombre = document.getElementById("nombre").value.trim();
+    const apellido = document.getElementById("apellido").value.trim();
+    const usuario = document.getElementById("usuario").value.trim();
+    const correo = document.getElementById("correo").value.trim();
+    const pass1 = document.getElementById("password").value;
+    const pass2 = document.getElementById("password2").value;
+
+    if (!nombre || !apellido || !usuario || !correo || !pass1 || !pass2) {
+      errorBox.textContent = "❌ Completa todos los campos";
+      return;
+    }
+
+    if (pass1 !== pass2) {
+      errorBox.textContent = "❌ Las contraseñas no coinciden";
+      return;
+    }
+
+    const userData = {
+      nombre,
+      apellido,
+      usuario,
+      correo,
+      password: pass1
+    };
+
+    //  Guardar usuario
+    localStorage.setItem("qp_user", JSON.stringify(userData));
+
+    //  MUY IMPORTANTE → NO LOGUEAR AQUÍ
+    localStorage.setItem("qp_logged_in", "false");
+
+    //  Mostrar modal bonito
+    modal.style.display = "flex";
+  });
+
+  // Botón que manda al login
+  btnGoLogin.addEventListener("click", () => {
+    window.location.href = "login.html";
+  });
+</script>
+
+</body>
+</html>

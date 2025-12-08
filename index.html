@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>QuakePredictEC — Prototipo (sin módulo de modelo)</title>
     <link rel="stylesheet" href="styles.css" />
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
+    
     <header>
         <img class="logo" src="logo.jpg" alt="QuakePredictEC"
             style="height:50px;width:50px;border-radius:10px;margin-right:10px" />
@@ -19,8 +21,22 @@
         </div>
 
         <button id="btnTheme" class="chip" style="margin-left:auto;cursor:pointer;">
-            🌙 Modo oscuro
+             🌙 Modo oscuro
         </button>
+
+        <span id="userLabel" class="chip" style="display:none;">
+            👤 Usuario
+        </span>
+
+        <button id="btnLogin" class="chip" style="margin-left:8px;cursor:pointer;display:none;">
+            Iniciar sesión
+        </button>
+
+        <button id="btnLogout" class="chip" style="margin-left:8px;cursor:pointer;display:none;">
+            Cerrar sesión
+        </button>
+
+
     </header>
 
     <div class="container">
@@ -171,31 +187,65 @@
                             style="background:#60a5fa;border:0;color:#071018;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer">
                             Descargar CSV
                         </button>
+
+                        <p id="msgLoginCSV"
+                            style="margin-top:6px;font-size:12px;color:#f87171;display:none;">
+                            Debes iniciar sesión para poder descargar los reportes.
+                        </p>
                     </div>
+
                 </div>
             </section>
-
-            <!-- Alertas -->
+            <!-- bloque de alertas  -->
             <section id="view-alertas" hidden>
-                <div class="card">
-                    <h3>Alertas activas</h3>
 
-                    <!-- BOTÓN PARA CREAR UNA NUEVA ALERTA -->
-                    <button id="btnSimularAlerta" class="chip"
-                        style="margin-top:8px;margin-bottom:8px;">
-                        Simular alerta
-                    </button>
+            <div class="card">
+                <h3>🔔 Alertas activas</h3>
 
-                    <ul id="alerts"
-                        style="list-style:none;padding-left:0;margin-top:8px"></ul>
+                <button id="btnSimularAlerta" class="chip"
+                style="margin-top:8px;margin-bottom:8px;">
+                Simular alerta
+                </button>
+
+                <ul id="alerts"
+                style="list-style:none;padding-left:0;margin-top:8px"></ul>
+            </div>
+
+            <!--  NUEVO BLOQUE DE SUSCRIPCIÓN -->
+            <div class="card" style="margin-top:20px">
+                <h3>📩 Suscripción a alertas</h3>
+
+                <p style="font-size:13px;color:var(--muted)">
+                Selecciona las ciudades donde deseas recibir alertas sísmicas por correo.
+                </p>
+
+                <div id="cityCheckboxes" style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <label><input type="checkbox" value="Quito"> Quito</label>
+                <label><input type="checkbox" value="Guayaquil"> Guayaquil</label>
+                <label><input type="checkbox" value="Cuenca"> Cuenca</label>
+                <label><input type="checkbox" value="Manta"> Manta</label>
+                <label><input type="checkbox" value="Ambato"> Ambato</label>
+                <label><input type="checkbox" value="Machala"> Machala</label>
                 </div>
-            </section>
 
+                <button id="btnSubscribe" class="chip"
+                style="margin-top:12px;background:#22d3ee;color:#020617;font-weight:700">
+                ✅ Suscribirme a estas ciudades
+                </button>
+
+                <p id="subMsg" style="font-size:12px;margin-top:8px;color:#34d399;display:none">
+                ✔ Suscripción guardada correctamente
+                </p>
+
+            </div>
+            </section>
         </main>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app.js"></script>
+    
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<script src="app.js"></script>
 </body>
 
 </html>
