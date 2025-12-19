@@ -469,7 +469,7 @@ if (btnSimularAlerta) {
       renderAlerts();
       newAlertsCount++;
       updateAlertBadge();
-      
+
       simulateEmailSend(regionRandom, magnitud);
 
     } else {
