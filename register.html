@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>QuakePredictEC — Registro</title>
@@ -76,7 +77,7 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.65);
+      background: rgba(0, 0, 0, .65);
       backdrop-filter: blur(5px);
       display: none;
       align-items: center;
@@ -85,14 +86,14 @@
     }
 
     .modal-card {
-      background: linear-gradient(145deg,#0f172a,#020617);
+      background: linear-gradient(145deg, #0f172a, #020617);
       padding: 26px;
       border-radius: 18px;
       width: 100%;
       max-width: 360px;
       text-align: center;
-      border: 1px solid rgba(255,255,255,.08);
-      box-shadow: 0 25px 60px rgba(0,0,0,.6);
+      border: 1px solid rgba(255, 255, 255, .08);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, .6);
       animation: modalPop .35s ease;
     }
 
@@ -123,100 +124,119 @@
     }
 
     @keyframes modalPop {
-      from { transform: scale(.85); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+      from {
+        transform: scale(.85);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<div class="login-wrapper">
-  <div class="login-card">
+  <div class="login-wrapper">
+    <div class="login-card">
 
-    <h1>Registro</h1>
+      <h1>Registro</h1>
 
-    <form id="registerForm">
-      <input type="text" id="nombre" placeholder="Nombre" required>
-      <input type="text" id="apellido" placeholder="Apellido" required>
-      <input type="text" id="usuario" placeholder="Usuario (nickname)" required>
-      <input type="email" id="correo" placeholder="Correo electrónico" required>
+      <form id="registerForm">
+        <input type="text" id="nombre" placeholder="Nombre" required>
+        <input type="text" id="apellido" placeholder="Apellido" required>
+        <input type="text" id="usuario" placeholder="Usuario (nickname)" required>
+        <input type="email" id="correo" placeholder="Correo electrónico" required>
 
-      <input type="password" id="password" placeholder="Contraseña" required>
-      <input type="password" id="password2" placeholder="Repetir contraseña" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+        <input type="password" id="password2" placeholder="Repetir contraseña" required>
 
-      <button type="submit">Registrarse</button>
-    </form>
+        <button type="submit">Registrarse</button>
+      </form>
 
-    <div id="registerError" class="login-error"></div>
+      <div id="registerError" class="login-error"></div>
 
-    <div class="login-links">
-      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+      <div class="login-links">
+        ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+      </div>
+
     </div>
-
   </div>
-</div>
 
-<!--  MODAL REGISTRO EXITOSO -->
-<div id="successModal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-icon"></div>
-    <h2>Registro exitoso</h2>
-    <p>Tu cuenta fue creada correctamente.<br>Ahora puedes iniciar sesión.</p>
-    <button id="btnGoLogin">Iniciar sesión</button>
+  <!--  MODAL REGISTRO EXITOSO -->
+  <div id="successModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon"></div>
+      <h2>Registro exitoso</h2>
+      <p>Tu cuenta fue creada correctamente.<br>Ahora puedes iniciar sesión.</p>
+      <button id="btnGoLogin">Iniciar sesión</button>
+    </div>
   </div>
-</div>
 
-<script>
-  const form = document.getElementById("registerForm");
-  const errorBox = document.getElementById("registerError");
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+    const form = document.getElementById("registerForm");
+    const errorBox = document.getElementById("registerError");
 
-  const modal = document.getElementById("successModal");
-  const btnGoLogin = document.getElementById("btnGoLogin");
+    const modal = document.getElementById("successModal");
+    const btnGoLogin = document.getElementById("btnGoLogin");
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const nombre = document.getElementById("nombre").value.trim();
-    const apellido = document.getElementById("apellido").value.trim();
-    const usuario = document.getElementById("usuario").value.trim();
-    const correo = document.getElementById("correo").value.trim();
-    const pass1 = document.getElementById("password").value;
-    const pass2 = document.getElementById("password2").value;
+      const nombre = document.getElementById("nombre").value.trim();
+      const apellido = document.getElementById("apellido").value.trim();
+      const usuario = document.getElementById("usuario").value.trim();
+      const correo = document.getElementById("correo").value.trim();
+      const pass1 = document.getElementById("password").value;
+      const pass2 = document.getElementById("password2").value;
 
-    if (!nombre || !apellido || !usuario || !correo || !pass1 || !pass2) {
-      errorBox.textContent = "❌ Completa todos los campos";
-      return;
-    }
+      if (!nombre || !apellido || !usuario || !correo || !pass1 || !pass2) {
+        errorBox.textContent = "❌ Completa todos los campos";
+        return;
+      }
 
-    if (pass1 !== pass2) {
-      errorBox.textContent = "❌ Las contraseñas no coinciden";
-      return;
-    }
+      if (pass1 !== pass2) {
+        errorBox.textContent = "❌ Las contraseñas no coinciden";
+        return;
+      }
 
-    const userData = {
-      nombre,
-      apellido,
-      usuario,
-      correo,
-      password: pass1
-    };
+      const userData = {
+        first_name: nombre,
+        last_name: apellido,
+        username: usuario,
+        email: correo,
+        password: pass1
+      };
 
-    //  Guardar usuario
-    localStorage.setItem("qp_user", JSON.stringify(userData));
+      try {
+        const resp = await fetch(`${API_BASE}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData)
+        });
 
-    //  MUY IMPORTANTE → NO LOGUEAR AQUÍ
-    localStorage.setItem("qp_logged_in", "false");
+        const data = await resp.json();
 
-    //  Mostrar modal bonito
-    modal.style.display = "flex";
-  });
+        if (!resp.ok) {
+          errorBox.textContent = "❌ " + (data.detail || "No se pudo registrar");
+          return;
+        }
 
-  // Botón que manda al login
-  btnGoLogin.addEventListener("click", () => {
-    window.location.href = "login.html";
-  });
-</script>
+        modal.style.display = "flex";
+      } catch (err) {
+        errorBox.textContent = "❌ Error de conexión con el servidor";
+      }
+    });
+
+    // Botón que manda al login
+    btnGoLogin.addEventListener("click", () => {
+      window.location.href = "login.html";
+    });
+  </script>
 
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -129,49 +130,50 @@
   </div>
 
   <script>
-    // ====== LOGIN REAL FUNCIONAL ======
+    const API_BASE = "http://127.0.0.1:8000";
 
-    const form = document.getElementById('loginForm');
-    const errorBox = document.getElementById('loginError');
+    const form = document.getElementById("loginForm");
+    const errorBox = document.getElementById("loginError");
     const btnBack = document.getElementById("btnBack");
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      errorBox.textContent = "";
 
-      const email = document.getElementById('email').value.trim();
-      const pass  = document.getElementById('password').value;
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
 
-      //  Leer usuario correctamente
-      const savedUserRaw = localStorage.getItem("qp_user");
+      try {
+        const resp = await fetch(`${API_BASE}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
 
-      if (!savedUserRaw) {
-        errorBox.textContent = "❌ No existe ninguna cuenta registrada.";
-        return;
-      }
+        const data = await resp.json();
 
-      const savedUser = JSON.parse(savedUserRaw);
+        if (!resp.ok) {
+          errorBox.textContent = "❌ " + (data.detail || "Error al iniciar sesión");
+          return;
+        }
 
-      //  Validación correcta
-      if (email === savedUser.correo && pass === savedUser.password) {
-        localStorage.setItem('qp_logged_in', 'true');
-        localStorage.setItem('qp_user_email', savedUser.correo);
+        // Sesión creada con token
+        localStorage.setItem("qp_access_token", data.access_token);
+        localStorage.setItem("qp_user_email", email);
 
-        window.location.href = 'index.html';
-      } else {
-        errorBox.textContent = "❌ Usuario o contraseña incorrectos.";
+        // volver a index
+        window.location.href = "index.html";
+
+      } catch (err) {
+        errorBox.textContent = "❌ Error de conexión con el servidor";
       }
     });
 
-    // Si ya está logueado → entra directo
-    if (localStorage.getItem('qp_logged_in') === 'true') {
-      window.location.href = 'index.html';
-    }
-
-    // Botón volver sin iniciar sesión
     btnBack.addEventListener("click", () => {
       window.location.href = "index.html";
     });
   </script>
 
 </body>
+
 </html>

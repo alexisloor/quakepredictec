@@ -759,3 +759,9 @@ Gracias por usar QuakePredictEC.
   //  Mensaje visual en la app (opcional)
   alert(`📧 Alerta enviada al correo de ${userData.usuario}\nCiudad: ${cleanRegion}\nMagnitud: ${magnitud}`);
 }
+
+// CERRAR SESION
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("qp_access_token");
+  localStorage.removeItem("qp_user_email");
+});
