@@ -130,7 +130,8 @@
   </div>
 
   <script>
-    const API_BASE = "http://127.0.0.1:8000";
+    const API_BASE =  "https://quakepredictec-backend.onrender.com"
+;
 
     const form = document.getElementById("loginForm");
     const errorBox = document.getElementById("loginError");
@@ -160,6 +161,8 @@
         // Sesión creada con token
         localStorage.setItem("qp_access_token", data.access_token);
         localStorage.setItem("qp_user_email", email);
+        localStorage.setItem("qp_logged_in", "true");
+
 
         // volver a index
         window.location.href = "index.html";
