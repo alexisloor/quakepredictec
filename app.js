@@ -556,6 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const isLoggedIn = localStorage.getItem("qp_logged_in") === "true";
   const userEmail  = localStorage.getItem("qp_user_email");
 
+
   if (isLoggedIn) {
     // Mostrar solo LOGOUT y el usuario
     if (btnLogin)  btnLogin.style.display  = "none";
@@ -651,6 +652,12 @@ function updateSessionUI() {
       userLabel.textContent = "";
     }
   }
+  const subscriptionCard = document.getElementById("subscriptionCard");
+
+  if (subscriptionCard) {
+    subscriptionCard.style.display = logged ? "block" : "none";
+  }
+
 }
 
 // 👉 Ir al login
