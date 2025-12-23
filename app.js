@@ -5,10 +5,8 @@ const views = {
   datos: document.getElementById('view-datos'),
   alertas: document.getElementById('view-alertas'),
 };
-
 let newAlertsCount = 0;
 const alertBadge = document.getElementById('alertBadge');
-
 function updateAlertBadge() {
   if (!alertBadge) return;
   if (newAlertsCount > 0) {
@@ -18,7 +16,6 @@ function updateAlertBadge() {
     alertBadge.style.display = 'none';
   }
 }
-
 tabs.forEach(t => t.addEventListener('click', () => {
   tabs.forEach(x => x.classList.remove('active'));
   t.classList.add('active');
@@ -32,7 +29,6 @@ tabs.forEach(t => t.addEventListener('click', () => {
     updateAlertBadge();
   }
 }));
-
 // ====== SERIES SIMULADAS (solo decorativo por ahora) ======
 const days = 24;
 function rand(min, max) { return Math.random() * (max - min) + min }
@@ -56,7 +52,6 @@ function makeRecord(i) {
   const riesgo = +(10 + rand(-3, 6)).toFixed(1);
   return { fecha, region, sismos, lluvia, presion, riesgo };
 }
-
 const records = Array.from({ length: 120 }, (_, i) => makeRecord(i));
 let sortBy = 'fecha';
 let sortDir = 'desc';
@@ -79,7 +74,6 @@ function applyFilters() {
     return okRegion && okSearch && okRain && okDate;
   });
 }
-
 function sortData(arr) {
   return arr.sort((a, b) => {
     const A = a[sortBy], B = b[sortBy];
@@ -87,7 +81,6 @@ function sortData(arr) {
     return (sortDir === 'asc') ? cmp : -cmp;
   });
 }
-
 function renderTable() {
   const filtered = sortData(applyFilters());
   const total = filtered.length;
@@ -115,17 +108,14 @@ function renderTable() {
   if (prev) prev.disabled = page === 1;
   if (next) next.disabled = start + PAGE >= total;
 }
-
 ['fSearch','fRegion','fMinRain','fMaxRain','fStart','fEnd'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', () => { page = 1; renderTable(); });
 });
-
 const prevBtn = document.getElementById('btnPrev');
 const nextBtn = document.getElementById('btnNext');
 if (prevBtn) prevBtn.addEventListener('click', () => { if (page > 1) { page--; renderTable(); } });
 if (nextBtn) nextBtn.addEventListener('click', () => { page++; renderTable(); });
-
 document.querySelectorAll('[data-sort]').forEach(th => {
   th.style.cursor = 'pointer';
   th.addEventListener('click', () => {
@@ -157,14 +147,12 @@ const btnTheme = document.getElementById('btnTheme');
       initial = 'dark';
     }
   }
-
   root.dataset.theme = initial; // siempre 'light' o 'dark'
   if (btnTheme) {
     btnTheme.textContent =
       initial === 'light' ? '🌙 Modo oscuro' : '🌞 Modo claro';
   }
 })();
-
 if (btnTheme) {
   btnTheme.addEventListener('click', () => {
     const current = root.dataset.theme === 'light' ? 'light' : 'dark';
@@ -177,8 +165,6 @@ if (btnTheme) {
       next === 'light' ? '🌙 Modo oscuro' : '🌞 Modo claro';
   });
 }
-
-
 
 // ====== FUNCIONES DE COLOR (MAGNITUD) ======
 // 0–4 verde, 4.1–6 amarillo, >6 rojo (tipo escala Richter / semáforo)
@@ -240,7 +226,7 @@ function addPrediccionToMap(p) {
     radius: 7,
     weight: 1,
     color: '#111827',
-    fillColor: colorMagnitude(p.magnitud),  // color por magnitud
+    fillColor: colorMagnitude(p.magnitud),  
     fillOpacity: 0.85
   });
   const html = `
@@ -257,7 +243,6 @@ function addPrediccionToMap(p) {
   p.marker = m;
   predLayer.addLayer(m);
 }
-
 function initMapaEC() {
   if (mapEC) {
     mapEC.invalidateSize();
@@ -271,52 +256,28 @@ function initMapaEC() {
 
   // Base 
   
-
-
-
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 18,
-  opacity: 0.90 ,
-  attribution: '&copy; OpenStreetMap'
-}).addTo(mapEC);
-L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}',
-  {
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
-    opacity: 0.50 ,
-    attribution: 'Esri, USGS | Physical Map'
-  }
-).addTo(mapEC);
-
-L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-  {
-    maxZoom: 18,
-    opacity: 0.75 ,
-    attribution: 'Esri, USGS, NOAA'
-  }
-).addTo(mapEC);
-
-
-
-
-/*L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    opacity: 0.90 ,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(mapEC);
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}',
     {
-      maxZoom: 20,
-      attribution: 'Tiles &copy; Esri — Source: Esri, DeLorme, NAVTEQ'
+      maxZoom: 18,
+      opacity: 0.50 ,
+      attribution: 'Esri, USGS | Physical Map'
     }
   ).addTo(mapEC);
 
-/*L.tileLayer(
-  'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-  {
-    maxZoom: 17,
-    attribution: '© OpenTopoMap'
-  }
-).addTo(mapEC);*/
-
-
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    {
+      maxZoom: 18,
+      opacity: 0.75 ,
+      attribution: 'Esri, USGS, NOAA'
+    }
+  ).addTo(mapEC);
 
   // placeholder para polígonos futuros
   const ecRiskPolygons = {
@@ -336,7 +297,7 @@ L.tileLayer(
   predLayer = L.layerGroup().addTo(mapEC);
   predicciones.forEach(p => addPrediccionToMap(p));
 
-  // Leyenda por magnitud (escala Richter)
+// Leyenda por magnitud (escala Richter)
   const legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
     const div = L.DomUtil.create('div', 'info legend');
@@ -402,7 +363,6 @@ const provinciasSimulacion = Object.keys(coordenadasPorRegion);
 // Simular nueva alerta (puntito SIEMPRE; alerta visible solo si magnitud > 6)
 if (btnSimularAlerta) {
   btnSimularAlerta.addEventListener('click', () => {
-    // magnitud entre 2.0 y 7.5 (para que salgan también < 4)
     const magnitud = +(2 + Math.random() * 5.5).toFixed(1);
 
     const regionRandom = provinciasSimulacion[
@@ -459,8 +419,6 @@ if (btnSimularAlerta) {
     if (mapEC) {
       addPrediccionToMap(nuevaPred);
     }
-
-    // Solo entra a la lista de alertas si magnitud > 6
     if (magnitud > 6) {
       alertsData.push({
         region: regionRandom,
@@ -478,7 +436,6 @@ if (btnSimularAlerta) {
   });
 }
 
-// click en alerta -> ir al mapa y abrir popup
 document.addEventListener('click', (e) => {
   const alerta = e.target.closest('#alerts li');
   if (!alerta) return;
@@ -506,194 +463,115 @@ document.addEventListener('click', (e) => {
   }, 300);
 });
 
-// ====== BLOQUEO DE DESCARGA SIN LOGIN ======
-const btnCSV = document.getElementById('btnCSV');
-const msgLoginCSV = document.getElementById('msgLoginCSV');
 
-if (btnCSV) {
-  const isLoggedIn = localStorage.getItem('qp_logged_in') === 'true';
+const btnLogin  = document.getElementById("btnLogin");
+const btnLogout = document.getElementById("btnLogout");
+const userLabel = document.getElementById("userLabel");
 
-  if (!isLoggedIn) {
-    btnCSV.disabled = true;
-    btnCSV.style.opacity = '0.5';
-    btnCSV.style.cursor = 'not-allowed';
-    if (msgLoginCSV) msgLoginCSV.style.display = 'block';
-  }
+const btnCSV = document.getElementById("btnCSV");
+const msgLoginCSV = document.getElementById("msgLoginCSV");
+const subscriptionCard = document.getElementById("subscriptionCard");
 
-  btnCSV.addEventListener('click', () => {
-    if (!isLoggedIn) {
-      alert('Debes iniciar sesión para descargar los reportes.');
-      return;
-    }
-
-    const rows = [['fecha', 'region', '#sismos_M4+', 'lluvia_mm', 'presion_hPa', 'indice_riesgo']];
-    for (let i = 0; i < 12; i++) {
-      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
-      rows.push([
-        d,
-        regiones[i % 4],
-        Math.round(rand(0, 5)),
-        Math.round(rand(0, 150)),
-        Math.round(1000 + rand(-12, 12)),
-        (10 + rand(-3, 6)).toFixed(1) + '%'
-      ]);
-    }
-    const csv = rows.map(r => r.join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-    a.download = 'quakepredictec_demo.csv';
-    a.click();
-  });
+function isLoggedIn() {
+  return localStorage.getItem("qp_logged_in") === "true";
 }
 
-// ====== CONTROL DE SESIÓN + USUARIO ======
-document.addEventListener("DOMContentLoaded", () => {
-
-  const btnLogin   = document.getElementById("btnLogin");
-  const btnLogout  = document.getElementById("btnLogout");
-  const userLabel  = document.getElementById("userLabel");
-
-  const isLoggedIn = localStorage.getItem("qp_logged_in") === "true";
-  const userEmail  = localStorage.getItem("qp_user_email");
-
-
-  if (isLoggedIn) {
-    // Mostrar solo LOGOUT y el usuario
-    if (btnLogin)  btnLogin.style.display  = "none";
-    if (btnLogout) btnLogout.style.display = "inline-block";
-
-    if (userLabel) {
-      userLabel.style.display = "inline-block";
-      userLabel.textContent = "👤 " + (userEmail || "Usuario");
+function getUserLabel() {
+  const userDataRaw = localStorage.getItem("qp_user");
+  if (userDataRaw) {
+    try {
+      const userData = JSON.parse(userDataRaw);
+      if (userData?.usuario) return "@" + userData.usuario;
+      if (userData?.email) return "👤 " + userData.email;
+    } catch (e) {
     }
-
-  } else {
-    //  Mostrar solo LOGIN
-    if (btnLogin)  btnLogin.style.display  = "inline-block";
-    if (btnLogout) btnLogout.style.display = "none";
-
-    if (userLabel) userLabel.style.display = "none";
   }
+  const email = localStorage.getItem("qp_user_email");
+  return "👤 " + (email || "Usuario");
+}
 
-  // 👉 Ir al login
+
+
+// ====== FUNCIÓN CENTRAL INICIO DE USUARIO  ======
+function updateSessionUI() {
+  const logged = isLoggedIn();
+  if (btnLogin)  btnLogin.style.display  = logged ? "none" : "inline-block";
+  if (btnLogout) btnLogout.style.display = logged ? "inline-block" : "none";
+
+  if (userLabel) {
+    if (logged) {
+      userLabel.style.display = "inline-block";
+      userLabel.textContent = getUserLabel();
+    } else {
+      userLabel.style.display = "none";
+      userLabel.textContent = "";
+    }
+  }
+  // CSV (bloqueo + mensaje)
+  if (btnCSV) {
+    btnCSV.disabled = !logged;
+    btnCSV.style.opacity = logged ? "1" : "0.5";
+    btnCSV.style.cursor = logged ? "pointer" : "not-allowed";
+  }
+  if (msgLoginCSV) {
+    msgLoginCSV.style.display = logged ? "none" : "block";
+  }
+  // Tarjeta suscripción
+  if (subscriptionCard) {
+    subscriptionCard.style.display = logged ? "block" : "none";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  updateSessionUI();
+
   if (btnLogin) {
     btnLogin.addEventListener("click", () => {
       window.location.href = "login.html";
     });
   }
 
-  // 👉 Cerrar sesión
   if (btnLogout) {
-  btnLogout.addEventListener("click", () => {
-    //  Quitar sesión
-    localStorage.removeItem("qp_logged_in");
-    localStorage.removeItem("qp_user_email");
+    btnLogout.addEventListener("click", () => {
+      localStorage.removeItem("qp_logged_in");
+      localStorage.removeItem("qp_user");
+      localStorage.removeItem("qp_user_email");
+      updateSessionUI();
+    });
+  }
 
-    // Ocultar botón de cerrar sesión
-    if (btnLogout) btnLogout.style.display = "none";
-    // Mostrar botón de iniciar sesión
-    if (btnLogin) btnLogin.style.display = "inline-block";
+  if (btnCSV) {
+    btnCSV.addEventListener("click", () => {
+      if (!isLoggedIn()) {
+        alert("Debes iniciar sesión para descargar los reportes.");
+        updateSessionUI();
+        return;
+      }
+      const rows = [
+        ["fecha", "region", "#sismos_M4+", "lluvia_mm", "presion_hPa", "indice_riesgo"]
+      ];
 
-    //  Ocultar usuario
-    if (userLabel) userLabel.style.display = "none";
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+        rows.push([
+          d,
+          regiones[i % 4],
+          Math.round(rand(0, 5)),
+          Math.round(rand(0, 150)),
+          Math.round(1000 + rand(-12, 12)),
+          (10 + rand(-3, 6)).toFixed(1) + "%"
+        ]);
+      }
 
-    // Bloquear otra vez el botón de descarga
-    const btnCSV = document.getElementById('btnCSV');
-    const msgLoginCSV = document.getElementById('msgLoginCSV');
-
-    if (btnCSV) {
-      btnCSV.disabled = true;
-      btnCSV.style.opacity = '0.5';
-      btnCSV.style.cursor = 'not-allowed';
-    }
-
-    if (msgLoginCSV) {
-      msgLoginCSV.style.display = "block";
-    }
-  });
-}
+      const csv = rows.map(r => r.join(",")).join("\n");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+      a.download = "quakepredictec_demo.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+  }
 });
-// ====== CONTROL DE SESIÓN (LOGIN / LOGOUT) DEFINITIVO ======
-const btnLogin  = document.getElementById("btnLogin");
-const btnLogout = document.getElementById("btnLogout");
-const userLabel = document.getElementById("userLabel");
-
-function updateSessionUI() {
-  const logged = localStorage.getItem("qp_logged_in") === "true";
-  const userData = JSON.parse(localStorage.getItem("qp_user"));
-
-  if (logged && userData) {
-    if (btnLogin)  btnLogin.style.display  = "none";
-    if (btnLogout) btnLogout.style.display = "inline-block";
-
-    if (userLabel) {
-      userLabel.style.display = "inline-block";
-      userLabel.textContent = "@" + userData.usuario;
-    }
-
-    //  Activar descarga
-    const btnCSV = document.getElementById('btnCSV');
-    const msgLoginCSV = document.getElementById('msgLoginCSV');
-
-    if (btnCSV) {
-      btnCSV.disabled = false;
-      btnCSV.style.opacity = '1';
-      btnCSV.style.cursor = 'pointer';
-    }
-
-    if (msgLoginCSV) msgLoginCSV.style.display = "none";
-
-  } else {
-    if (btnLogin)  btnLogin.style.display  = "inline-block";
-    if (btnLogout) btnLogout.style.display = "none";
-
-    if (userLabel) {
-      userLabel.style.display = "none";
-      userLabel.textContent = "";
-    }
-  }
-  const subscriptionCard = document.getElementById("subscriptionCard");
-
-  if (subscriptionCard) {
-    subscriptionCard.style.display = logged ? "block" : "none";
-  }
-
-}
-
-// 👉 Ir al login
-if (btnLogin) {
-  btnLogin.addEventListener("click", () => {
-    window.location.href = "login.html";
-  });
-}
-
-// 👉 Cerrar sesión (SIN CERRAR LA APP)
-if (btnLogout) {
-  btnLogout.addEventListener("click", () => {
-    localStorage.setItem("qp_logged_in", "false");
-
-    //  Bloquear descarga
-    const btnCSV = document.getElementById('btnCSV');
-    const msgLoginCSV = document.getElementById('msgLoginCSV');
-
-    if (btnCSV) {
-      btnCSV.disabled = true;
-      btnCSV.style.opacity = '0.5';
-      btnCSV.style.cursor = 'not-allowed';
-    }
-
-    if (msgLoginCSV) msgLoginCSV.style.display = "block";
-
-    updateSessionUI();
-  });
-}
-
-// Ejecutar al cargar la app
-updateSessionUI();
-
-
-
-
 
 // ====== SISTEMA DE SUSCRIPCIÓN A ALERTAS ======
 const btnSubscribe = document.getElementById("btnSubscribe");
@@ -701,14 +579,11 @@ const subMsg = document.getElementById("subMsg");
 
 if (btnSubscribe) {
   btnSubscribe.addEventListener("click", () => {
-
     const isLoggedIn = localStorage.getItem("qp_logged_in") === "true";
-
     if (!isLoggedIn) {
       alert("⚠ Debes iniciar sesión para poder suscribirte a alertas.");
       return;
     }
-
     const selectedCities = Array.from(
       document.querySelectorAll("#cityCheckboxes input:checked")
     ).map(c => c.value);
@@ -717,11 +592,7 @@ if (btnSubscribe) {
       alert("⚠ Selecciona al menos una ciudad.");
       return;
     }
-
-    // Guardar ciudades suscritas
     localStorage.setItem("qp_sub_cities", JSON.stringify(selectedCities));
-
-    //  Mostrar mensajito de confirmación
     if (subMsg) {
       subMsg.style.display = "block";
       setTimeout(() => subMsg.style.display = "none", 3500);
@@ -729,46 +600,3 @@ if (btnSubscribe) {
   });
 }
 
-
-// ====== SIMULACIÓN DE ENVÍO DE ALERTA POR CORREO ======
-function simulateEmailSend(region, magnitud) {
-
-  const isLoggedIn = localStorage.getItem("qp_logged_in") === "true";
-  if (!isLoggedIn) return;
-
-  const userData = JSON.parse(localStorage.getItem("qp_user"));
-  const subs = JSON.parse(localStorage.getItem("qp_sub_cities")) || [];
-
-  const cleanRegion = region.split("(")[0].trim();
-
-  //  Verifica si el usuario está suscrito a esa ciudad
-  if (!userData || !subs.includes(cleanRegion)) return;
-
-  // SIMULACIÓN REAL DEL CORREO (por consola)
-  console.log(`
-📧 ================================
-📧 SIMULACIÓN DE CORREO ENVIADO
-📧 ================================
-
-Para: ${userData.correo}
-Usuario: ${userData.usuario}
-
-📍 Ciudad: ${cleanRegion}
-📊 Magnitud estimada: ${magnitud}
-
-Mensaje:
-Se ha detectado una nueva alerta sísmica en tu zona.
-
-Gracias por usar QuakePredictEC.
-----------------------------------
-  `);
-
-  //  Mensaje visual en la app (opcional)
-  alert(`📧 Alerta enviada al correo de ${userData.usuario}\nCiudad: ${cleanRegion}\nMagnitud: ${magnitud}`);
-}
-
-// CERRAR SESION
-document.getElementById("btnLogout").addEventListener("click", () => {
-  localStorage.removeItem("qp_access_token");
-  localStorage.removeItem("qp_user_email");
-});
