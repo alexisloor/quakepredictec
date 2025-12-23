@@ -43,8 +43,8 @@ const lluviaSerie = Array.from({ length: days }, (_, i) =>
 const regiones = ['Costa', 'Sierra', 'Oriente', 'Insular'];
 
 function makeRecord(i) {
-  const d = new Date(Date.now() - (i * 86400000));  // i días atrás
-  const fecha = d.toISOString().slice(0, 10);       // YYYY-MM-DD
+  const d = new Date(Date.now() - (i * 86400000));  
+  const fecha = d.toISOString().slice(0, 10);       
   const region = regiones[i % regiones.length];
   const sismos = Math.max(0, Math.round(rand(0, 5) + (region === 'Costa' ? 1 : 0)));
   const lluvia = Math.round(rand(0, 150));
@@ -133,13 +133,12 @@ const root = document.documentElement;
 const btnTheme = document.getElementById('btnTheme');
 
 (function initTheme() {
-  const saved = localStorage.getItem('theme'); // 'light' | 'dark' | null
+  const saved = localStorage.getItem('theme'); 
   let initial;
 
   if (saved === 'light' || saved === 'dark') {
     initial = saved;
   } else {
-    // si el sistema prefiere claro, usamos light; si no, dark por defecto
     if (window.matchMedia &&
         window.matchMedia('(prefers-color-scheme: light)').matches) {
       initial = 'light';
@@ -147,7 +146,7 @@ const btnTheme = document.getElementById('btnTheme');
       initial = 'dark';
     }
   }
-  root.dataset.theme = initial; // siempre 'light' o 'dark'
+  root.dataset.theme = initial; 
   if (btnTheme) {
     btnTheme.textContent =
       initial === 'light' ? '🌙 Modo oscuro' : '🌞 Modo claro';
@@ -167,7 +166,6 @@ if (btnTheme) {
 }
 
 // ====== FUNCIONES DE COLOR (MAGNITUD) ======
-// 0–4 verde, 4.1–6 amarillo, >6 rojo (tipo escala Richter / semáforo)
 function colorMagnitude(m) {
   if (m >= 6.1) return '#dc2626';   // rojo
   if (m >= 4.1) return '#eab308';   // amarillo
@@ -253,8 +251,6 @@ function initMapaEC() {
     zoomControl: true,
     preferCanvas: true
   }).setView([-1.8, -78.2], 6);
-
-  // Base 
   
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
@@ -279,7 +275,6 @@ function initMapaEC() {
     }
   ).addTo(mapEC);
 
-  // placeholder para polígonos futuros
   const ecRiskPolygons = {
     "type":"FeatureCollection",
     "features":[]
@@ -297,7 +292,6 @@ function initMapaEC() {
   predLayer = L.layerGroup().addTo(mapEC);
   predicciones.forEach(p => addPrediccionToMap(p));
 
-// Leyenda por magnitud (escala Richter)
   const legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
     const div = L.DomUtil.create('div', 'info legend');
@@ -398,8 +392,8 @@ if (btnSimularAlerta) {
     let lon = baseLon;
 
     if (existentes > 0) {
-      const radio = 0.05;                        // ~5 km
-      const angulo = existentes * (Math.PI / 6); // 30° por alerta
+      const radio = 0.05;                        
+      const angulo = existentes * (Math.PI / 6); 
       lat = baseLat + radio * Math.cos(angulo);
       lon = baseLon + radio * Math.sin(angulo);
     }
