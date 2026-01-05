@@ -29,104 +29,150 @@ tabs.forEach(t => t.addEventListener('click', () => {
     updateAlertBadge();
   }
 }));
-// ====== SERIES SIMULADAS (solo decorativo por ahora) ======
-const days = 24;
-function rand(min, max) { return Math.random() * (max - min) + min }
-const sismos = Array.from({ length: days }, (_, i) =>
-  Math.max(0, Math.round(rand(0, 6) + Math.sin(i / 2) * 2))
-);
-const lluviaSerie = Array.from({ length: days }, (_, i) =>
-  Math.max(0, Math.round(rand(0, 30) + Math.sin(i / 3 + 1) * 12))
-);
-
-// ====== TABLA DE DATOS ======
-const regiones = ['Costa', 'Sierra', 'Oriente', 'Insular'];
-
-function makeRecord(i) {
-  const d = new Date(Date.now() - (i * 86400000));  
-  const fecha = d.toISOString().slice(0, 10);       
-  const region = regiones[i % regiones.length];
-  const sismos = Math.max(0, Math.round(rand(0, 5) + (region === 'Costa' ? 1 : 0)));
-  const lluvia = Math.round(rand(0, 150));
-  const presion = Math.round(1000 + rand(-18, 18));
-  const riesgo = +(10 + rand(-3, 6)).toFixed(1);
-  return { fecha, region, sismos, lluvia, presion, riesgo };
-}
-const records = Array.from({ length: 120 }, (_, i) => makeRecord(i));
-let sortBy = 'fecha';
-let sortDir = 'desc';
-const PAGE = 12;
+// ====== GESTIÓN DE DATOS (Backend Integration) ======
+let records = []; // Aquí guardaremos los datos reales que lleguen del backend
+let sortBy = 'probabilidad'; // Ordenar por probabilidad por defecto
+let sortDir = 'desc';        // De mayor a menor riesgo
+const PAGE = 10;
 let page = 1;
 
+// 1. FUNCIÓN PARA CARGAR DATOS REALES
+async function cargarTablaReal() {
+  const tableBody = document.getElementById('rows');
+  if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">🔄 Cargando datos en tiempo real...</td></tr>';
+
+  try {
+    // Petición al backend local
+    const response = await fetch('http://127.0.0.1:8000/riesgo-sismico');
+    const data = await response.json();
+
+    // Mapeamos los datos para que encajen en nuestra estructura de tabla
+    // Como no hay base de datos, la fecha siempre es "HOY"
+    const fechaHoy = new Date().toISOString().slice(0, 10);
+
+    records = data.map(item => ({
+      fecha: fechaHoy,
+      region: item.canton, // Usamos el cantón como ubicación
+      probabilidad: (item.probabilidad * 100).toFixed(2), // Convertir 0.45 -> 45.00
+      nivel: item.nivel_riesgo,
+      color: item.color
+    }));
+
+    // Renderizamos la tabla con los datos frescos
+    renderTable();
+
+  } catch (error) {
+    console.error("Error cargando tabla:", error);
+    if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#dc3545; padding:20px;">❌ Error conectando con el servidor local (uvicorn).</td></tr>';
+  }
+}
+
+// 2. FILTROS (Simplificados para lo que tenemos hoy)
 function applyFilters() {
   const q = document.getElementById('fSearch')?.value.trim().toLowerCase() || '';
-  const reg = document.getElementById('fRegion')?.value || 'all';
-  const minRain = +document.getElementById('fMinRain')?.value || 0;
-  const maxRain = +document.getElementById('fMaxRain')?.value || Infinity;
-  const dStart = document.getElementById('fStart')?.value || '';
-  const dEnd   = document.getElementById('fEnd')?.value || '';
-
+  
+  // Nota: Los filtros de fecha y lluvia los ignoramos por ahora 
+  // porque solo mostramos datos de HOY y sin columnas de clima en la vista simple.
+  
   return records.filter(r => {
-    const okRegion = reg === 'all' || r.region === reg;
+    // Buscamos por nombre de cantón o fecha
     const okSearch = !q || (r.region.toLowerCase().includes(q) || r.fecha.includes(q));
-    const okRain   = r.lluvia >= minRain && r.lluvia <= maxRain;
-    const okDate   = (!dStart || r.fecha >= dStart) && (!dEnd || r.fecha <= dEnd);
-    return okRegion && okSearch && okRain && okDate;
+    return okSearch;
   });
 }
+
+// 3. ORDENAMIENTO
 function sortData(arr) {
   return arr.sort((a, b) => {
-    const A = a[sortBy], B = b[sortBy];
+    // Truco: convertimos a número si es probabilidad para ordenar bien matemáticamente
+    let A = a[sortBy];
+    let B = b[sortBy];
+
+    if (sortBy === 'probabilidad') {
+      A = parseFloat(A);
+      B = parseFloat(B);
+    }
+
     const cmp = (A > B) ? 1 : (A < B) ? -1 : 0;
     return (sortDir === 'asc') ? cmp : -cmp;
   });
 }
+
+// 4. RENDERIZADO (Adaptado a tus 4 columnas)
 function renderTable() {
   const filtered = sortData(applyFilters());
   const total = filtered.length;
   const start = (page - 1) * PAGE;
   const slice = filtered.slice(start, start + PAGE);
 
-  document.getElementById('rows').innerHTML = slice.map(r => `
+  const rowsContainer = document.getElementById('rows');
+  
+  if (!rowsContainer) return;
+
+  if (total === 0) {
+    rowsContainer.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:15px">No se encontraron predicciones</td></tr>';
+    return;
+  }
+
+  // Generamos el HTML solo con las columnas que pediste
+  rowsContainer.innerHTML = slice.map(r => `
     <tr>
-      <td style="padding:8px;border-bottom:1px solid #1f2937">${r.fecha}</td>
-      <td style="padding:8px;border-bottom:1px solid #1f2937">${r.region}</td>
-      <td style="padding:8px;border-bottom:1px solid #1f2937">${r.sismos}</td>
-      <td style="padding:8px;border-bottom:1px solid #1f2937">${r.lluvia}</td>
-      <td style="padding:8px;border-bottom:1px solid #1f2937">${r.presion}</td>
-      <td style="padding:8px;border-bottom:1px solid #1f2937">${r.riesgo}%</td>
+      <td style="padding:12px; border-bottom:1px solid #374151; color:#9ca3af">${r.fecha}</td>
+      <td style="padding:12px; border-bottom:1px solid #374151; font-weight:bold; color:#f3f4f6">${r.region}</td>
+      <td style="padding:12px; border-bottom:1px solid #374151;">
+        <div style="display:flex; align-items:center; gap:8px">
+          <div style="width:100%; max-width:80px; height:6px; background:#374151; border-radius:3px; overflow:hidden;">
+             <div style="width:${r.probabilidad}%; height:100%; background:${r.color}"></div>
+          </div>
+          <span>${r.probabilidad}%</span>
+        </div>
+      </td>
+      <td style="padding:12px; border-bottom:1px solid #374151;">
+        <span style="background:${r.color}20; color:${r.color}; padding:2px 8px; border-radius:4px; font-size:0.85em; font-weight:bold; border:1px solid ${r.color}">
+          ${r.nivel}
+        </span>
+      </td>
     </tr>
   `).join('');
 
+  // Actualizar contador
   const countEl = document.getElementById('count');
   if (countEl) countEl.textContent = total
     ? `${start + 1}-${Math.min(start + PAGE, total)} de ${total}`
     : `0 de 0`;
 
+  // Botones paginación
   const prev = document.getElementById('btnPrev');
   const next = document.getElementById('btnNext');
   if (prev) prev.disabled = page === 1;
   if (next) next.disabled = start + PAGE >= total;
 }
-['fSearch','fRegion','fMinRain','fMaxRain','fStart','fEnd'].forEach(id => {
+
+// 5. LISTENERS DE LA UI
+['fSearch'].forEach(id => {
   const el = document.getElementById(id);
   if (el) el.addEventListener('input', () => { page = 1; renderTable(); });
 });
+
 const prevBtn = document.getElementById('btnPrev');
 const nextBtn = document.getElementById('btnNext');
 if (prevBtn) prevBtn.addEventListener('click', () => { if (page > 1) { page--; renderTable(); } });
 if (nextBtn) nextBtn.addEventListener('click', () => { page++; renderTable(); });
+
 document.querySelectorAll('[data-sort]').forEach(th => {
   th.style.cursor = 'pointer';
   th.addEventListener('click', () => {
-    const key = th.dataset.sort;
+    const key = th.dataset.sort; 
+    // Asegúrate que en tu HTML los <th> tengan data-sort="fecha", "region", etc.
     if (sortBy === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
     else { sortBy = key; sortDir = 'asc'; }
     page = 1; renderTable();
   });
 });
 
-renderTable();
+// --- INICIALIZACIÓN ---
+// Llamamos a la función real al cargar la página
+document.addEventListener('DOMContentLoaded', cargarTablaReal);
 
 // ====== MODO CLARO/OSCURO ======
 const root = document.documentElement;
@@ -176,71 +222,70 @@ function fmtPct(x){ return (x<=1? (x*100).toFixed(1) : x.toFixed(1))+'%'; }
 // ====== MAPA Y PREDICCIONES ======
 let mapEC = null;
 let predLayer = null;
-
-// Coordenadas reales aprox. por región
-const coordenadasPorRegion = {
-  "Pichincha (Quito)":      { lat: -0.1807, lon: -78.4678 },
-  "Guayas (Guayaquil)":     { lat: -2.1700, lon: -79.9224 },
-  "Manabí (Manta)":         { lat: -0.9623, lon: -80.7120 },
-  "Esmeraldas":             { lat: 0.9592,  lon: -79.6530 },
-  "El Oro (Machala)":       { lat: -3.2581, lon: -79.9552 },
-  "Los Ríos (Babahoyo)":    { lat: -1.8022, lon: -79.5352 },
-  "Azuay (Cuenca)":         { lat: -2.9006, lon: -79.0045 },
-  "Tungurahua (Ambato)":    { lat: -1.2491, lon: -78.6167 },
-  "Santo Domingo":          { lat: -0.2530, lon: -79.1750 },
-  "Santa Elena":            { lat: -2.2260, lon: -80.8580 },
-  "Loja":                   { lat: -3.9931, lon: -79.2042 }
-};
-
-// Predicciones iniciales
-const predicciones = [
-  {
-    ...coordenadasPorRegion["Guayas (Guayaquil)"],
-    region: 'Guayas (Guayaquil)',
-    prob: 0.37,
-    when: 'próximos 5-10 días',
-    magnitud: 6.1,
-    temp7d: 27.3,
-    msg: 'Se han detectado patrones de sismicidad y anomalías de presión.'
-  },
-  {
-    ...coordenadasPorRegion["Pichincha (Quito)"],
-    region: 'Pichincha (Quito)',
-    prob: 0.54,
-    when: 'próximos 3-7 días',
-    magnitud: 6.3,
-    temp7d: 18.9,
-    msg: 'Se han detectado patrones de sismicidad y anomalías de precipitación.'
-  }
-];
-
 // helper para añadir una predicción al mapa
 function addPrediccionToMap(p) {
   if (!mapEC) return;
   if (!predLayer) {
     predLayer = L.layerGroup().addTo(mapEC);
   }
+
+  // Usamos el COLOR que ya viene calculado desde el Backend (Python)
   const m = L.circleMarker([p.lat, p.lon], {
-    radius: 7,
-    weight: 1,
-    color: '#111827',
-    fillColor: colorMagnitude(p.magnitud),  
-    fillOpacity: 0.85
+    radius: 8,              // Un poco más grande para que se vea bien
+    weight: 2,
+    color: '#ffffff',       // Borde blanco para resaltar
+    fillColor: p.color,     // <--- COLOR REAL DEL MODELO
+    fillOpacity: 0.9
   });
+
+  // Convertimos probabilidad (0.85) a porcentaje (85%)
+  const probPct = (p.probabilidad * 100).toFixed(1) + '%';
+
   const html = `
-    <div style="max-width:260px">
-      <b>QuakePredictEC informa</b><br>
-      Zona: <b>${p.region}</b><br>
-      Prob. de sismo: <b>${fmtPct(p.prob)}</b><br>
-      Magnitud estimada: <b>${p.magnitud}</b><br>
-      🌡️ Temp. promedio últimos 7 días: <b>${p.temp7d.toFixed(1)} °C</b><br>
-      Ventana temporal: ${p.when}<br><br>
-      <i>${p.msg}</i>
+    <div style="max-width:260px; font-family: sans-serif;">
+      <b style="color:#111827">📡 QuakePredictEC (En vivo)</b><br>
+      <hr style="margin: 5px 0; border: 0; border-top: 1px solid #ddd;">
+      📍 Cantón: <b>${p.canton}</b><br>
+      ⚠️ Nivel de Riesgo: <b style="color:${p.color}">${p.nivel_riesgo}</b><br>
+      📊 Probabilidad: <b>${probPct}</b><br>
+      <br>
+      <small style="color:#666">
+        Análisis basado en patrones climáticos de los últimos 30 días.
+      </small>
     </div>`;
+  
   m.bindPopup(html);
-  p.marker = m;
   predLayer.addLayer(m);
 }
+// --- NUEVA LÓGICA DE CONEXIÓN AL BACKEND ---
+async function cargarPrediccionesReales() {
+  console.log("Conectando con el modelo de predicción sísmica (Localhost)...");
+  
+  try {
+    // Llamada al endpoint que creamos en Python
+    const response = await fetch('http://127.0.0.1:8000/riesgo-sismico');
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const datosReales = await response.json();
+    console.log("Datos recibidos:", datosReales);
+
+    // Limpiamos capas anteriores si hubiera
+    if (predLayer) predLayer.clearLayers();
+
+    // Dibujamos cada predicción real en el mapa
+    datosReales.forEach(prediccion => {
+      addPrediccionToMap(prediccion);
+    });
+
+  } catch (error) {
+    console.error("Error conectando al Backend:", error);
+    alert("No se pudo conectar con el sistema de predicción. Asegúrate de que el backend (uvicorn) esté corriendo.");
+  }
+}
+
 function initMapaEC() {
   if (mapEC) {
     mapEC.invalidateSize();
@@ -290,7 +335,7 @@ function initMapaEC() {
   }).addTo(mapEC);
 
   predLayer = L.layerGroup().addTo(mapEC);
-  predicciones.forEach(p => addPrediccionToMap(p));
+  cargarPrediccionesReales();
 
   const legend = L.control({ position: 'bottomright' });
   legend.onAdd = function () {
