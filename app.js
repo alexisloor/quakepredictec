@@ -371,7 +371,7 @@ if (tabMapa) {
 if (!document.getElementById('view-mapa')?.hidden) {
   setTimeout(initMapaEC, 0);
 }
-
+/*
 // ====== ALERTAS ======
 const alertsEl = document.getElementById('alerts');
 const btnSimularAlerta = document.getElementById('btnSimularAlerta');
@@ -501,7 +501,7 @@ document.addEventListener('click', (e) => {
     }
   }, 300);
 });
-
+*/
 
 const btnLogin  = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
