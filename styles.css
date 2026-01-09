@@ -471,3 +471,70 @@ tbody td { color: var(--text); }
 }
 
 */
+/* ====== OVERLAY DE CARGA DEL MAPA ====== */
+.map-wrap {
+  position: relative;
+}
+
+.map-loading {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklab, var(--panel), transparent 20%);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+
+.map-loading-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  text-align: center;
+  box-shadow: 0 12px 30px var(--shadow);
+  min-width: 240px;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin .8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+/* ====== Tabla adaptable a tema ====== */
+.table-head {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+}
+
+#table table thead th {
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+#table table tbody td {
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.td-muted { color: var(--muted) !important; }
+.td-strong { font-weight: 700; }
+.progress-track {
+  width: 100%;
+  max-width: 80px;
+  height: 6px;
+  background: color-mix(in oklab, var(--border), transparent 30%);
+  border-radius: 3px;
+  overflow: hidden;
+}

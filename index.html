@@ -107,6 +107,15 @@
                 <div class="card">
                     <h3>Mapa de riesgo</h3>
                     <div id="map-ec" style="height:480px;border:1px solid #1f2937;border-radius:10px"></div>
+                     <!-- OVERLAY DE CARGA -->
+                    <div id="mapLoading" class="map-loading" style="display:none;">
+                        <div class="map-loading-card">
+                        <div class="spinner"></div>
+                        <div style="font-weight:700;margin-top:10px;">Cargando predicciones…</div>
+                        <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+                            Conectando con datos sismicos recientes 
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -154,7 +163,7 @@
                     <div id="table" style="max-height:320px;overflow:auto;border:1px solid #1f2937;border-radius:10px">
                         <table style="width:100%;border-collapse:collapse;font-size:13px">
                             <thead>
-                                <tr style="position:sticky;top:0;background:#0b1220">
+                                <tr class="table-head">
                                     <th data-sort="fecha"
                                         style="text-align:left;padding:12px;border-bottom:1px solid #1f2937;cursor:pointer">
                                         Fecha ⬍
@@ -167,12 +176,12 @@
 
                                     <th data-sort="probabilidad"
                                         style="text-align:left;padding:12px;border-bottom:1px solid #1f2937;cursor:pointer">
-                                        Probabilidad
+                                        Probabilidad estimada
                                     </th>
 
                                     <th data-sort="nivel"
                                         style="text-align:left;padding:12px;border-bottom:1px solid #1f2937;cursor:pointer">
-                                        Nivel de Riesgo
+                                        Nivel de Probabilidad
                                     </th>
                                 </tr>
                             </thead>
@@ -197,10 +206,6 @@
 
                 <div class="card">
                     <h3>🔔 Alertas activas</h3>
-
-                    <button id="btnSimularAlerta" class="chip" style="margin-top:8px;margin-bottom:8px;">
-                        Simular alerta
-                    </button>
 
                     <ul id="alerts" style="list-style:none;padding-left:0;margin-top:8px"></ul>
                 </div>

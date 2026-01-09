@@ -117,23 +117,38 @@ function renderTable() {
   // Generamos el HTML solo con las columnas que pediste
   rowsContainer.innerHTML = slice.map(r => `
     <tr>
-      <td style="padding:12px; border-bottom:1px solid #374151; color:#9ca3af">${r.fecha}</td>
-      <td style="padding:12px; border-bottom:1px solid #374151; font-weight:bold; color:#f3f4f6">${r.region}</td>
-      <td style="padding:12px; border-bottom:1px solid #374151;">
+      <td class="td-muted" style="padding:12px;">
+        ${r.fecha}
+      </td>
+
+      <td class="td-strong" style="padding:12px;">
+        ${r.region}
+      </td>
+
+      <td style="padding:12px;">
         <div style="display:flex; align-items:center; gap:8px">
-          <div style="width:100%; max-width:80px; height:6px; background:#374151; border-radius:3px; overflow:hidden;">
-             <div style="width:${r.probabilidad}%; height:100%; background:${r.color}"></div>
+          <div class="progress-track">
+            <div style="width:${r.probabilidad}%; height:100%; background:${r.color}"></div>
           </div>
           <span>${r.probabilidad}%</span>
         </div>
       </td>
-      <td style="padding:12px; border-bottom:1px solid #374151;">
-        <span style="background:${r.color}20; color:${r.color}; padding:2px 8px; border-radius:4px; font-size:0.85em; font-weight:bold; border:1px solid ${r.color}">
+
+      <td style="padding:12px;">
+        <span style="
+          background: color-mix(in oklab, ${r.color}, transparent 88%);
+          color:${r.color};
+          padding:2px 8px;
+          border-radius:4px;
+          font-size:0.85em;
+          font-weight:bold;
+          border:1px solid ${r.color}">
           ${r.nivel}
         </span>
       </td>
     </tr>
   `).join('');
+
 
   // Actualizar contador
   const countEl = document.getElementById('count');
@@ -246,8 +261,8 @@ function addPrediccionToMap(p) {
       <b style="color:#111827">📡 QuakePredictEC (En vivo)</b><br>
       <hr style="margin: 5px 0; border: 0; border-top: 1px solid #ddd;">
       📍 Cantón: <b>${p.canton}</b><br>
-      ⚠️ Nivel de Riesgo: <b style="color:${p.color}">${p.nivel_riesgo}</b><br>
-      📊 Probabilidad: <b>${probPct}</b><br>
+      ⚠️ Nivel de Probabilidad: <b style="color:${p.color}">${p.nivel_riesgo}</b><br>
+      📊 Probabilidad estimada: <b>${probPct}</b><br>
       <br>
       <small style="color:#666">
         Análisis basado en patrones climáticos de los últimos 30 días.
@@ -255,12 +270,13 @@ function addPrediccionToMap(p) {
     </div>`;
   
   m.bindPopup(html);
+  p._marker = m; 
   predLayer.addLayer(m);
 }
 // --- NUEVA LÓGICA DE CONEXIÓN AL BACKEND ---
 async function cargarPrediccionesReales() {
   console.log("Conectando con el modelo de predicción sísmica (Localhost)...");
-  
+  setMapLoading(true, "Cargando predicciones…");
   try {
     // Llamada al endpoint que creamos en Python
     const response = await fetch('http://127.0.0.1:8000/riesgo-sismico');
@@ -270,6 +286,16 @@ async function cargarPrediccionesReales() {
     }
 
     const datosReales = await response.json();
+    highProbAlerts = datosReales
+    .filter(p => typeof p.probabilidad === "number" && p.probabilidad >= ALERT_THRESHOLD)
+    .sort((a, b) => b.probabilidad - a.probabilidad);
+
+    // badge = cantidad de altas
+    newAlertsCount = highProbAlerts.length;
+    updateAlertBadge();
+
+    // render en la pestaña de alertas
+    renderHighProbAlerts();
     console.log("Datos recibidos:", datosReales);
 
     // Limpiamos capas anteriores si hubiera
@@ -283,7 +309,13 @@ async function cargarPrediccionesReales() {
   } catch (error) {
     console.error("Error conectando al Backend:", error);
     alert("No se pudo conectar con el sistema de predicción. Asegúrate de que el backend (uvicorn) esté corriendo.");
+  } finally {
+    setMapLoading(false);
   }
+  // ====== Construir lista de "alertas" (alta probabilidad) ======
+
+
+  
 }
 
 function initMapaEC() {
@@ -341,12 +373,12 @@ function initMapaEC() {
   legend.onAdd = function () {
     const div = L.DomUtil.create('div', 'info legend');
 
-    let html = '<div style="font-weight:700;margin-bottom:6px">Magnitud (escala Richter)</div>';
+    let html = '<div style="font-weight:700;margin-bottom:6px">Nivel de probabilidad estimada</div>';
 
     const items = [
-      { label: '0.0 – 4.0', color: colorMagnitude(3.5) }, // verde
-      { label: '4.1 – 6.0', color: colorMagnitude(5.0) }, // amarillo
-      { label: '6.1 o más', color: colorMagnitude(6.5) }  // rojo
+      { label: 'Menor a 40%', color: colorMagnitude(3.5) }, // verde
+      { label: 'Entre 40%-70%', color: colorMagnitude(5.0) }, // amarillo
+      { label: 'Mayor a 70%', color: colorMagnitude(6.5) }  // rojo
     ];
 
     items.forEach(it => {
@@ -371,137 +403,7 @@ if (tabMapa) {
 if (!document.getElementById('view-mapa')?.hidden) {
   setTimeout(initMapaEC, 0);
 }
-/*
-// ====== ALERTAS ======
-const alertsEl = document.getElementById('alerts');
-const btnSimularAlerta = document.getElementById('btnSimularAlerta');
 
-// alertas iniciales basadas en predicciones con magnitud > 6
-const alertsData = predicciones
-  .filter(p => p.magnitud > 6)
-  .map(p => ({
-    region: p.region,
-    texto: `Riesgo alto — magnitud ${p.magnitud}`
-  }));
-
-function renderAlerts() {
-  if (!alertsEl) return;
-  alertsEl.classList.add('alert-list');
-  alertsEl.innerHTML = alertsData.map(a => `
-    <li class="alert-item" data-region="${a.region}">
-      <strong>${a.region}</strong> — ${a.texto}
-    </li>
-  `).join('');
-}
-
-renderAlerts();
-
-// provincias para simulación
-const provinciasSimulacion = Object.keys(coordenadasPorRegion);
-
-// Simular nueva alerta (puntito SIEMPRE; alerta visible solo si magnitud > 6)
-if (btnSimularAlerta) {
-  btnSimularAlerta.addEventListener('click', () => {
-    const magnitud = +(2 + Math.random() * 5.5).toFixed(1);
-
-    const regionRandom = provinciasSimulacion[
-      Math.floor(Math.random() * provinciasSimulacion.length)
-    ];
-    const coords = coordenadasPorRegion[regionRandom] || { lat: -1.8, lon: -78.2 };
-    const temp7d = +(13 + Math.random() * 15).toFixed(1);
-    const prob = +(0.30 + Math.random() * 0.55).toFixed(2);
-    const whenOptions = [
-      'próximos 3–6 días',
-      'próximos 5–10 días',
-      'próximos días',
-      'próximos 7–12 días'
-    ];
-    const whenRandom = whenOptions[
-      Math.floor(Math.random() * whenOptions.length)
-    ];
-    const msgOptions = [
-      'Variaciones de presión y anomalías detectadas.',
-      'Patrones climáticos asociados a actividad sísmica.',
-      'Incremento en humedad y presión atmosférica.',
-      'Actividad reciente relacionada a lluvias intensas.'
-    ];
-    const msgRandom = msgOptions[
-      Math.floor(Math.random() * msgOptions.length)
-    ];
-
-    // cuántas predicciones ya hay en esa región (para separar puntitos)
-    const existentes = predicciones.filter(p => p.region === regionRandom).length;
-    const baseLat = coords.lat;
-    const baseLon = coords.lon;
-    let lat = baseLat;
-    let lon = baseLon;
-
-    if (existentes > 0) {
-      const radio = 0.05;                        
-      const angulo = existentes * (Math.PI / 6); 
-      lat = baseLat + radio * Math.cos(angulo);
-      lon = baseLon + radio * Math.sin(angulo);
-    }
-
-    const nuevaPred = {
-      lat,
-      lon,
-      region: regionRandom,
-      prob,
-      when: whenRandom,
-      magnitud,
-      temp7d,
-      msg: msgRandom
-    };
-
-    predicciones.push(nuevaPred);
-    if (mapEC) {
-      addPrediccionToMap(nuevaPred);
-    }
-    if (magnitud > 6) {
-      alertsData.push({
-        region: regionRandom,
-        texto: `Nueva alerta — magnitud ${magnitud}`
-      });
-      renderAlerts();
-      newAlertsCount++;
-      updateAlertBadge();
-
-      simulateEmailSend(regionRandom, magnitud);
-
-    } else {
-      console.log(`Predicción registrada en mapa con magnitud ${magnitud}, sin activar alerta.`);
-    }
-  });
-}
-
-document.addEventListener('click', (e) => {
-  const alerta = e.target.closest('#alerts li');
-  if (!alerta) return;
-
-  const region = alerta.dataset.region;
-
-  tabs.forEach(tab => tab.classList.remove('active'));
-  const mapaTab = document.querySelector('.tab[data-tab="mapa"]');
-  if (mapaTab) mapaTab.classList.add('active');
-  Object.values(views).forEach(v => v.hidden = true);
-  views.mapa.hidden = false;
-
-  setTimeout(() => {
-    if (!mapEC) {
-      initMapaEC();
-    } else {
-      mapEC.invalidateSize();
-    }
-
-    const pred = predicciones.find(p => p.region === region);
-    if (pred && pred.marker && mapEC) {
-      mapEC.setView([pred.lat, pred.lon], 9, { animate: true });
-      pred.marker.openPopup();
-    }
-  }, 300);
-});
-*/
 
 const btnLogin  = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
@@ -638,4 +540,155 @@ if (btnSubscribe) {
     }
   });
 }
+
+// ====== ZOOM POR PROVINCIA (FILTRO MAPA) ======
+const boundsPorProvincia = {
+  "Azuay": [[-3.70, -79.20], [-2.40, -78.20]],
+  "Bolívar": [[-2.10, -79.30], [-1.20, -78.70]],
+  "Cañar": [[-2.90, -79.40], [-2.10, -78.60]],
+  "Carchi": [[0.50, -78.40], [1.10, -77.60]],
+  "Chimborazo": [[-2.10, -79.10], [-1.30, -78.30]],
+  "Cotopaxi": [[-1.30, -78.90], [-0.50, -78.20]],
+  "El Oro": [[-3.90, -80.10], [-3.00, -79.40]],
+  "Esmeraldas": [[0.40, -80.20], [1.30, -78.70]],
+  "Galápagos": [[-1.80, -92.10], [0.80, -89.20]],
+  "Guayas": [[-2.90, -80.20], [-1.20, -79.10]],
+  "Imbabura": [[0.00, -78.60], [0.70, -77.80]],
+  "Loja": [[-5.10, -80.00], [-3.50, -78.70]],
+  "Los Ríos": [[-2.10, -79.90], [-0.90, -79.10]],
+  "Manabí": [[-1.90, -80.80], [0.10, -79.70]],
+  "Morona Santiago": [[-3.70, -78.30], [-1.50, -76.60]],
+  "Napo": [[-1.20, -78.00], [0.50, -76.60]],
+  "Orellana": [[-1.40, -77.60], [0.70, -75.80]],
+  "Pastaza": [[-2.60, -78.20], [-0.90, -76.30]],
+  "Pichincha": [[-0.70, -79.10], [0.40, -77.80]],
+  "Santa Elena": [[-2.50, -80.90], [-1.90, -80.30]],
+  "Santo Domingo de los Tsáchilas": [[-0.70, -79.60], [-0.10, -78.90]],
+  "Sucumbíos": [[-0.40, -77.60], [0.70, -75.80]],
+  "Tungurahua": [[-1.60, -78.90], [-1.00, -78.20]],
+  "Zamora Chinchipe": [[-4.90, -79.20], [-3.00, -77.30]],
+};
+
+// Ecuador completo (para "Todas")
+const ECUADOR_BOUNDS = [[-5.1, -81.2], [1.6, -75.0]];
+
+function zoomAProvincia(nombre) {
+  if (!mapEC) return;
+
+  if (nombre === "all") {
+    mapEC.fitBounds(ECUADOR_BOUNDS, { padding: [20, 20] });
+    return;
+  }
+
+  const b = boundsPorProvincia[nombre];
+  if (!b) return;
+
+  mapEC.fitBounds(b, { padding: [20, 20] });
+}
+
+// Listener del filtro Provincia (Mapa)
+document.addEventListener("DOMContentLoaded", () => {
+  const selProv = document.getElementById("fProvincia");
+  if (selProv) {
+    selProv.addEventListener("change", () => {
+      // Si el mapa aún no está inicializado, lo inicializa
+      if (!mapEC) initMapaEC();
+
+      // Espera un tick para que Leaflet tenga tamaño correcto
+      setTimeout(() => {
+        mapEC.invalidateSize();
+        zoomAProvincia(selProv.value);
+      }, 50);
+    });
+  }
+});
+
+// ====== LOADING OVERLAY MAPA ======
+function setMapLoading(isLoading, msg) {
+  const overlay = document.getElementById("mapLoading");
+  if (!overlay) return;
+
+  if (isLoading) {
+    overlay.style.display = "flex";
+    if (msg) {
+      const title = overlay.querySelector(".map-loading-card div:nth-child(2)");
+      if (title) title.textContent = msg;
+    }
+  } else {
+    overlay.style.display = "none";
+  }
+}
+
+// ====== ALERTAS POR ALTA PROBABILIDAD ======
+const alertsEl = document.getElementById('alerts');
+
+// umbral: 70% = 0.70
+const ALERT_THRESHOLD = 0.70;
+
+// aquí guardamos las predicciones “altas”
+let highProbAlerts = [];
+
+// Renderiza la lista en la pestaña Alertas
+function renderHighProbAlerts() {
+  if (!alertsEl) return;
+
+  if (!highProbAlerts.length) {
+    alertsEl.innerHTML = `
+      <li class="alert-item">
+        No hay predicciones con probabilidad alta (≥ 70%) en este momento.
+      </li>`;
+    return;
+  }
+
+  alertsEl.classList.add('alert-list');
+  alertsEl.innerHTML = highProbAlerts.map(p => {
+    const probPct = (p.probabilidad * 100).toFixed(1) + '%';
+    return `
+       <li class="alert-item"
+        data-lat="${p.lat}"
+        data-lon="${p.lon}"
+        data-canton="${p.canton}"
+        style="border-left:6px solid ${p.color}; cursor:pointer;">
+      <strong>${p.canton}</strong><br>
+      <span style="color:var(--muted);font-size:12px">
+        Nivel de probabilidad: <b style="color:${p.color}">${p.nivel_riesgo}</b> — ${probPct}
+      </span>
+    </li>
+  `;
+  }).join('');
+}
+// Click en una alerta -> ir al mapa y enfocar el punto
+document.addEventListener("click", (e) => {
+  const item = e.target.closest("#alerts .alert-item");
+  if (!item) return;
+
+  const lat = parseFloat(item.dataset.lat);
+  const lon = parseFloat(item.dataset.lon);
+  if (Number.isNaN(lat) || Number.isNaN(lon)) return;
+
+  // 1) activar pestaña mapa
+  tabs.forEach(x => x.classList.remove('active'));
+  const tabMapa = document.querySelector('.tab[data-tab="mapa"]');
+  if (tabMapa) tabMapa.classList.add('active');
+
+  // 2) mostrar vista mapa y ocultar las otras
+  Object.values(views).forEach(v => v.hidden = true);
+  views.mapa.hidden = false;
+
+  // 3) asegurar mapa inicializado
+  setTimeout(() => {
+    if (!mapEC) initMapaEC();
+    mapEC.invalidateSize();
+
+    // 4) zoom y centrar
+    mapEC.setView([lat, lon], 9, { animate: true });
+
+    // 5) abrir popup del marcador correcto (si existe)
+    const canton = item.dataset.canton;
+    const pred = highProbAlerts.find(p => p.canton === canton && p._marker);
+    if (pred?. _marker) {
+      pred._marker.openPopup();
+    }
+  }, 200);
+});
 
