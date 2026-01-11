@@ -43,7 +43,7 @@ async function cargarTablaReal() {
 
   try {
     // Petición al backend local
-    const response = await fetch('http://127.0.0.1:8000/riesgo-sismico');
+    const response = await fetch('https://quakepredictec-backend.onrender.com/riesgo-sismico');
     const data = await response.json();
 
     // Mapeamos los datos para que encajen en nuestra estructura de tabla
@@ -279,7 +279,7 @@ async function cargarPrediccionesReales() {
   setMapLoading(true, "Cargando predicciones…");
   try {
     // Llamada al endpoint que creamos en Python
-    const response = await fetch('http://127.0.0.1:8000/riesgo-sismico');
+    const response = await fetch('https://quakepredictec-backend.onrender.com/riesgo-sismico');
     
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
