@@ -39,31 +39,36 @@ let page = 1;
 // 1. FUNCIÓN PARA CARGAR DATOS REALES
 async function cargarTablaReal() {
   const tableBody = document.getElementById('rows');
+  // Limpiamos la tabla antes de cargar
   if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">🔄 Cargando datos en tiempo real...</td></tr>';
-
   try {
-    // Petición al backend local
+    // Petición al backend 
     const response = await fetch('https://quakepredictec-backend.onrender.com/riesgo-sismico');
     const data = await response.json();
-
-    // Mapeamos los datos para que encajen en nuestra estructura de tabla
-    // Como no hay base de datos, la fecha siempre es "HOY"
-    const fechaHoy = new Date().toISOString().slice(0, 10);
-
-    records = data.map(item => ({
-      fecha: fechaHoy,
-      region: item.canton, // Usamos el cantón como ubicación
-      probabilidad: (item.probabilidad * 100).toFixed(2), // Convertir 0.45 -> 45.00
-      nivel: item.nivel_riesgo,
-      color: item.color
-    }));
-
-    // Renderizamos la tabla con los datos frescos
-    renderTable();
+    // 2. Fecha por defecto (solo por si el backend no manda fecha en una predicción nueva)
+    const fechaDefault = new Date().toISOString().slice(0, 10);
+    records = data.map(item => {
+      // TRUCO: Si el backend trae fecha (viene de BD), usamos esa. Si no, usamos hoy.
+      let fechaMostrada = fechaDefault;
+      if (item.fecha) {
+          // Cortamos la cadena ISO (ej: "2026-01-18T10:00:00") para dejar solo "2026-01-18"
+          fechaMostrada = item.fecha.slice(0, 10);
+      }
+      return {
+        fecha: fechaMostrada, 
+        region: item.canton, // La clave del backend es 'canton'
+        // El backend devuelve 0.9024 -> Frontend convierte a 90.24
+        probabilidad: (item.probabilidad * 100).toFixed(2), 
+        nivel: item.nivel_riesgo,
+        color: item.color
+      };
+    });
+    // 3. Renderizamos la tabla
+    renderTable(); // Asumo que esta función ya la tienes creada y funciona bien
 
   } catch (error) {
     console.error("Error cargando tabla:", error);
-    if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#dc3545; padding:20px;">❌ Error conectando con el servidor local (uvicorn).</td></tr>';
+    if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#dc3545; padding:20px;">❌ Error conectando con el servidor. Asegúrate de que uvicorn esté corriendo.</td></tr>';
   }
 }
 
