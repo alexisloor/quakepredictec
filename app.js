@@ -278,30 +278,43 @@ function addPrediccionToMap(p) {
   p._marker = m; 
   predLayer.addLayer(m);
 }
-// --- NUEVA LÓGICA DE CONEXIÓN AL BACKEND ---
+// --- NUEVA LÓGICA DE CONEXIÓN AL BACKEND (CORREGIDA) ---
 async function cargarPrediccionesReales() {
-  console.log("Conectando con el modelo de predicción sísmica (Localhost)...");
+  console.log("Conectando con el modelo de predicción sísmica...");
   setMapLoading(true, "Cargando predicciones…");
+  
   try {
-    // Llamada al endpoint que creamos en Python
+    // Llamada al endpoint de producción
     const response = await fetch('https://quakepredictec-backend.onrender.com/riesgo-sismico');
     
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
 
-    const datosReales = await response.json();
-    highProbAlerts = datosReales
-    .filter(p => typeof p.probabilidad === "number" && p.probabilidad >= ALERT_THRESHOLD)
-    .sort((a, b) => b.probabilidad - a.probabilidad);
+    const datosCrudos = await response.json();
 
-    // badge = cantidad de altas
+    const unicosMap = new Map();
+    datosCrudos.forEach(item => {
+      // Usamos el nombre del cantón como clave única
+      if (!unicosMap.has(item.canton)) {
+        unicosMap.set(item.canton, item);
+      }
+    });
+    // Convertimos el mapa limpio de vuelta a un array
+    const datosReales = Array.from(unicosMap.values());
+
+    // Ahora trabajamos con 'datosReales' (que ya está limpio)
+    highProbAlerts = datosReales
+      .filter(p => typeof p.probabilidad === "number" && p.probabilidad >= ALERT_THRESHOLD)
+      .sort((a, b) => b.probabilidad - a.probabilidad);
+
+    // badge = cantidad de alertas (Ahora mostrará el número correcto)
     newAlertsCount = highProbAlerts.length;
     updateAlertBadge();
 
     // render en la pestaña de alertas
     renderHighProbAlerts();
-    console.log("Datos recibidos:", datosReales);
+    console.log("Datos recibidos (Limpios):", datosReales);
 
     // Limpiamos capas anteriores si hubiera
     if (predLayer) predLayer.clearLayers();
@@ -313,14 +326,11 @@ async function cargarPrediccionesReales() {
 
   } catch (error) {
     console.error("Error conectando al Backend:", error);
-    alert("No se pudo conectar con el sistema de predicción. Asegúrate de que el backend (uvicorn) esté corriendo.");
+    // Puedes dejar el alert o quitarlo para no interrumpir al usuario en producción
+    // alert("No se pudo conectar con el sistema de predicción.");
   } finally {
     setMapLoading(false);
   }
-  // ====== Construir lista de "alertas" (alta probabilidad) ======
-
-
-  
 }
 
 function initMapaEC() {
