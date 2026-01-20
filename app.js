@@ -36,49 +36,60 @@ let sortDir = 'desc';        // De mayor a menor riesgo
 const PAGE = 10;
 let page = 1;
 
-// 1. FUNCIÓN PARA CARGAR DATOS REALES
+// 1. FUNCIÓN PARA CARGAR DATOS REALES (CON FIX ANTI-DUPLICADOS)
 async function cargarTablaReal() {
   const tableBody = document.getElementById('rows');
+
   // Limpiamos la tabla antes de cargar
-  if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">🔄 Cargando datos en tiempo real...</td></tr>';
+  if (tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">🔄 Cargando datos en tiempo real...</td></tr>';
+
   try {
     // Petición al backend 
     const response = await fetch('https://quakepredictec-backend.onrender.com/riesgo-sismico');
-    const data = await response.json();
+    const datosCrudos = await response.json();
+
+    const unicosMap = new Map();
+    datosCrudos.forEach(item => {
+      if (!unicosMap.has(item.canton)) {
+        unicosMap.set(item.canton, item);
+      }
+    });
+    // Convertimos de vuelta a array limpio
+    const data = Array.from(unicosMap.values());
     // 2. Fecha por defecto (solo por si el backend no manda fecha en una predicción nueva)
     const fechaDefault = new Date().toISOString().slice(0, 10);
+
     records = data.map(item => {
       // TRUCO: Si el backend trae fecha (viene de BD), usamos esa. Si no, usamos hoy.
       let fechaMostrada = fechaDefault;
       if (item.fecha) {
-          // Cortamos la cadena ISO (ej: "2026-01-18T10:00:00") para dejar solo "2026-01-18"
-          fechaMostrada = item.fecha.slice(0, 10);
+        fechaMostrada = item.fecha.slice(0, 10);
       }
       return {
-        fecha: fechaMostrada, 
+        fecha: fechaMostrada,
         region: item.canton, // La clave del backend es 'canton'
-        // El backend devuelve 0.9024 -> Frontend convierte a 90.24
-        probabilidad: (item.probabilidad * 100).toFixed(2), 
+        probabilidad: (item.probabilidad * 100).toFixed(2),
         nivel: item.nivel_riesgo,
         color: item.color
       };
     });
+
     // 3. Renderizamos la tabla
-    renderTable(); // Asumo que esta función ya la tienes creada y funciona bien
+    renderTable();
 
   } catch (error) {
     console.error("Error cargando tabla:", error);
-    if(tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#dc3545; padding:20px;">❌ Error conectando con el servidor. Asegúrate de que uvicorn esté corriendo.</td></tr>';
+    if (tableBody) tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#dc3545; padding:20px;">❌ Error conectando con el servidor. Intenta recargar la página.</td></tr>';
   }
 }
 
 // 2. FILTROS (Simplificados para lo que tenemos hoy)
 function applyFilters() {
   const q = document.getElementById('fSearch')?.value.trim().toLowerCase() || '';
-  
+
   // Nota: Los filtros de fecha y lluvia los ignoramos por ahora 
   // porque solo mostramos datos de HOY y sin columnas de clima en la vista simple.
-  
+
   return records.filter(r => {
     // Buscamos por nombre de cantón o fecha
     const okSearch = !q || (r.region.toLowerCase().includes(q) || r.fecha.includes(q));
@@ -111,7 +122,7 @@ function renderTable() {
   const slice = filtered.slice(start, start + PAGE);
 
   const rowsContainer = document.getElementById('rows');
-  
+
   if (!rowsContainer) return;
 
   if (total === 0) {
@@ -182,7 +193,7 @@ if (nextBtn) nextBtn.addEventListener('click', () => { page++; renderTable(); })
 document.querySelectorAll('[data-sort]').forEach(th => {
   th.style.cursor = 'pointer';
   th.addEventListener('click', () => {
-    const key = th.dataset.sort; 
+    const key = th.dataset.sort;
     // Asegúrate que en tu HTML los <th> tengan data-sort="fecha", "region", etc.
     if (sortBy === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
     else { sortBy = key; sortDir = 'asc'; }
@@ -199,20 +210,20 @@ const root = document.documentElement;
 const btnTheme = document.getElementById('btnTheme');
 
 (function initTheme() {
-  const saved = localStorage.getItem('theme'); 
+  const saved = localStorage.getItem('theme');
   let initial;
 
   if (saved === 'light' || saved === 'dark') {
     initial = saved;
   } else {
     if (window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: light)').matches) {
+      window.matchMedia('(prefers-color-scheme: light)').matches) {
       initial = 'light';
     } else {
       initial = 'dark';
     }
   }
-  root.dataset.theme = initial; 
+  root.dataset.theme = initial;
   if (btnTheme) {
     btnTheme.textContent =
       initial === 'light' ? '🌙 Modo oscuro' : '🌞 Modo claro';
@@ -237,7 +248,7 @@ function colorMagnitude(m) {
   if (m >= 4.1) return '#eab308';   // amarillo
   return '#22c55e';                 // verde
 }
-function fmtPct(x){ return (x<=1? (x*100).toFixed(1) : x.toFixed(1))+'%'; }
+function fmtPct(x) { return (x <= 1 ? (x * 100).toFixed(1) : x.toFixed(1)) + '%'; }
 
 // ====== MAPA Y PREDICCIONES ======
 let mapEC = null;
@@ -273,20 +284,20 @@ function addPrediccionToMap(p) {
         Análisis basado en patrones climáticos de los últimos 30 días.
       </small>
     </div>`;
-  
+
   m.bindPopup(html);
-  p._marker = m; 
+  p._marker = m;
   predLayer.addLayer(m);
 }
 // --- NUEVA LÓGICA DE CONEXIÓN AL BACKEND (CORREGIDA) ---
 async function cargarPrediccionesReales() {
   console.log("Conectando con el modelo de predicción sísmica...");
   setMapLoading(true, "Cargando predicciones…");
-  
+
   try {
     // Llamada al endpoint de producción
     const response = await fetch('https://quakepredictec-backend.onrender.com/riesgo-sismico');
-    
+
     if (!response.ok) {
       throw new Error(`Error HTTP: ${response.status}`);
     }
@@ -343,17 +354,17 @@ function initMapaEC() {
     zoomControl: true,
     preferCanvas: true
   }).setView([-1.8, -78.2], 6);
-  
+
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18,
-    opacity: 0.90 ,
+    opacity: 0.90,
     attribution: '&copy; OpenStreetMap'
   }).addTo(mapEC);
   L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}',
     {
       maxZoom: 18,
-      opacity: 0.50 ,
+      opacity: 0.50,
       attribution: 'Esri, USGS | Physical Map'
     }
   ).addTo(mapEC);
@@ -362,14 +373,14 @@ function initMapaEC() {
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
     {
       maxZoom: 18,
-      opacity: 0.75 ,
+      opacity: 0.75,
       attribution: 'Esri, USGS, NOAA'
     }
   ).addTo(mapEC);
 
   const ecRiskPolygons = {
-    "type":"FeatureCollection",
-    "features":[]
+    "type": "FeatureCollection",
+    "features": []
   };
 
   L.geoJSON(ecRiskPolygons, {
@@ -420,7 +431,7 @@ if (!document.getElementById('view-mapa')?.hidden) {
 }
 
 
-const btnLogin  = document.getElementById("btnLogin");
+const btnLogin = document.getElementById("btnLogin");
 const btnLogout = document.getElementById("btnLogout");
 const userLabel = document.getElementById("userLabel");
 
@@ -451,7 +462,7 @@ function getUserLabel() {
 // ====== FUNCIÓN CENTRAL INICIO DE USUARIO  ======
 function updateSessionUI() {
   const logged = isLoggedIn();
-  if (btnLogin)  btnLogin.style.display  = logged ? "none" : "inline-block";
+  if (btnLogin) btnLogin.style.display = logged ? "none" : "inline-block";
   if (btnLogout) btnLogout.style.display = logged ? "inline-block" : "none";
 
   if (userLabel) {
@@ -701,7 +712,7 @@ document.addEventListener("click", (e) => {
     // 5) abrir popup del marcador correcto (si existe)
     const canton = item.dataset.canton;
     const pred = highProbAlerts.find(p => p.canton === canton && p._marker);
-    if (pred?. _marker) {
+    if (pred?._marker) {
       pred._marker.openPopup();
     }
   }, 200);
