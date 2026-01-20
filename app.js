@@ -130,7 +130,6 @@ function renderTable() {
     return;
   }
 
-  // Generamos el HTML solo con las columnas que pediste
   rowsContainer.innerHTML = slice.map(r => `
     <tr>
       <td class="td-muted" style="padding:12px;">
@@ -514,27 +513,30 @@ document.addEventListener("DOMContentLoaded", () => {
         updateSessionUI();
         return;
       }
+      const data = sortData(applyFilters());
+      if (!data.length) {
+      alert("No hay datos para descargar con los filtros actuales.");
+      return;
+    }
       const rows = [
-        ["fecha", "region", "#sismos_M4+", "lluvia_mm", "presion_hPa", "indice_riesgo"]
+        ["fecha", "ubicacion", "probabilidad_estimada_%", "nivel_probabilidad"]
       ];
 
-      for (let i = 0; i < 12; i++) {
-        const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
-        rows.push([
-          d,
-          regiones[i % 4],
-          Math.round(rand(0, 5)),
-          Math.round(rand(0, 150)),
-          Math.round(1000 + rand(-12, 12)),
-          (10 + rand(-3, 6)).toFixed(1) + "%"
-        ]);
-      }
+      data.forEach(r => {
+        rows.push([r.fecha, r.region, r.probabilidad, r.nivel]);
+      });
 
-      const csv = rows.map(r => r.join(",")).join("\n");
+      const csv = rows
+        .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-      a.download = "quakepredictec_demo.csv";
+      a.href = URL.createObjectURL(blob);
+      a.download = "quakepredictec_reportes.csv";
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(a.href);
     });
   }
