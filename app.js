@@ -36,7 +36,7 @@ let sortDir = 'desc';        // De mayor a menor riesgo
 const PAGE = 10;
 let page = 1;
 
-// 1. FUNCIÓN PARA CARGAR DATOS REALES (CON FIX ANTI-DUPLICADOS)
+// 1. FUNCIÓN PARA CARGAR DATOS REALES
 async function cargarTablaReal() {
   const tableBody = document.getElementById('rows');
 
@@ -60,7 +60,7 @@ async function cargarTablaReal() {
     const fechaDefault = new Date().toISOString().slice(0, 10);
 
     records = data.map(item => {
-      // TRUCO: Si el backend trae fecha (viene de BD), usamos esa. Si no, usamos hoy.
+      // Si el backend trae fecha (viene de BD), usamos esa. Si no, usamos hoy.
       let fechaMostrada = fechaDefault;
       if (item.fecha) {
         fechaMostrada = item.fecha.slice(0, 10);
@@ -83,13 +83,9 @@ async function cargarTablaReal() {
   }
 }
 
-// 2. FILTROS (Simplificados para lo que tenemos hoy)
+// 2. FILTROS 
 function applyFilters() {
   const q = document.getElementById('fSearch')?.value.trim().toLowerCase() || '';
-
-  // Nota: Los filtros de fecha y lluvia los ignoramos por ahora 
-  // porque solo mostramos datos de HOY y sin columnas de clima en la vista simple.
-
   return records.filter(r => {
     // Buscamos por nombre de cantón o fecha
     const okSearch = !q || (r.region.toLowerCase().includes(q) || r.fecha.includes(q));
@@ -100,7 +96,6 @@ function applyFilters() {
 // 3. ORDENAMIENTO
 function sortData(arr) {
   return arr.sort((a, b) => {
-    // Truco: convertimos a número si es probabilidad para ordenar bien matemáticamente
     let A = a[sortBy];
     let B = b[sortBy];
 
@@ -108,13 +103,12 @@ function sortData(arr) {
       A = parseFloat(A);
       B = parseFloat(B);
     }
-
     const cmp = (A > B) ? 1 : (A < B) ? -1 : 0;
     return (sortDir === 'asc') ? cmp : -cmp;
   });
 }
 
-// 4. RENDERIZADO (Adaptado a tus 4 columnas)
+// 4. RENDERIZADO 
 function renderTable() {
   const filtered = sortData(applyFilters());
   const total = filtered.length;
@@ -193,14 +187,13 @@ document.querySelectorAll('[data-sort]').forEach(th => {
   th.style.cursor = 'pointer';
   th.addEventListener('click', () => {
     const key = th.dataset.sort;
-    // Asegúrate que en tu HTML los <th> tengan data-sort="fecha", "region", etc.
     if (sortBy === key) sortDir = (sortDir === 'asc') ? 'desc' : 'asc';
     else { sortBy = key; sortDir = 'asc'; }
     page = 1; renderTable();
   });
 });
 
-// --- INICIALIZACIÓN ---
+// INICIALIZACIÓN
 // Llamamos a la función real al cargar la página
 document.addEventListener('DOMContentLoaded', cargarTablaReal);
 
@@ -241,7 +234,7 @@ if (btnTheme) {
   });
 }
 
-// ====== FUNCIONES DE COLOR (MAGNITUD) ======
+// FUNCIONES DE COLOR (MAGNITUD)
 function colorMagnitude(m) {
   if (m >= 6.1) return '#dc2626';   // rojo
   if (m >= 4.1) return '#eab308';   // amarillo
@@ -249,7 +242,7 @@ function colorMagnitude(m) {
 }
 function fmtPct(x) { return (x <= 1 ? (x * 100).toFixed(1) : x.toFixed(1)) + '%'; }
 
-// ====== MAPA Y PREDICCIONES ======
+// MAPA Y PREDICCIONES
 let mapEC = null;
 let predLayer = null;
 // helper para añadir una predicción al mapa
@@ -456,9 +449,7 @@ function getUserLabel() {
   return "👤 " + (email || "Usuario");
 }
 
-
-
-// ====== FUNCIÓN CENTRAL INICIO DE USUARIO  ======
+// FUNCIÓN CENTRAL INICIO DE USUARIO 
 function updateSessionUI() {
   const logged = isLoggedIn();
   if (btnLogin) btnLogin.style.display = logged ? "none" : "inline-block";
@@ -542,32 +533,117 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ====== SISTEMA DE SUSCRIPCIÓN A ALERTAS ======
-const btnSubscribe = document.getElementById("btnSubscribe");
-const subMsg = document.getElementById("subMsg");
+// SISTEMA DE SUSCRIPCIÓN A ALERTAS
+document.addEventListener('DOMContentLoaded', async () => {
+  const selectElement = document.getElementById('select-cities');
+  const btnSubscribe = document.getElementById('btnSubscribe');
+  const subMsg = document.getElementById('subMsg');
+  
+  const API_URL = "https://quakepredictec-backend.onrender.com"; 
+  
+  // 1. INICIALIZAR EL BUSCADOR 
+  let cityControl;
+  
+  if (selectElement) {
+    cityControl = new TomSelect('#select-cities', {
+      valueField: 'id',       // Lo que enviamos al backend (ID)
+      labelField: 'name',     // Lo que ve el usuario
+      searchField: 'name',    // Por qué campo busca
+      plugins: ['remove_button'],
+      maxItems: null,
+      create: false,
+      placeholder: "Busca tu cantón (ej: Quito)...",
+      render: {
+        option: function(data, escape) {
+          return '<div>' +
+            '<span class="title">' + escape(data.name) + '</span>' +
+            '<span class="subtitle" style="color:#888; font-size:0.9em; margin-left:5px">(' + escape(data.province || 'EC') + ')</span>' +
+          '</div>';
+        },
+        item: function(data, escape) {
+          return '<div>' + escape(data.name) + '</div>';
+        }
+      }
+    });
 
-if (btnSubscribe) {
-  btnSubscribe.addEventListener("click", () => {
-    const isLoggedIn = localStorage.getItem("qp_logged_in") === "true";
-    if (!isLoggedIn) {
-      alert("⚠ Debes iniciar sesión para poder suscribirte a alertas.");
-      return;
-    }
-    const selectedCities = Array.from(
-      document.querySelectorAll("#cityCheckboxes input:checked")
-    ).map(c => c.value);
+    // 2. CARGAR LISTA DE CIUDADES 
+    try {
+      const response = await fetch(`${API_URL}/cities`);
+      if (!response.ok) throw new Error("Backend offline");
+      
+      const cities = await response.json();
+      cityControl.addOption(cities); // Llenamos con datos reales
+      console.log("Lista de cantones cargada.");
 
-    if (selectedCities.length === 0) {
-      alert("⚠ Selecciona al menos una ciudad.");
-      return;
+    } catch (error) {
+      console.warn("No se pudo cargar cantones: usando modo diseño.");
+      // Datos falsos para que la interfaz no se vea rota si falla el servidor
+      const mockCities = [
+        {id: 101, name: "Quito (Offline)", province: "Pichincha"},
+        {id: 102, name: "Guayaquil (Offline)", province: "Guayas"},
+        {id: 103, name: "Cuenca (Offline)", province: "Azuay"}
+      ];
+      cityControl.addOption(mockCities);
     }
-    localStorage.setItem("qp_sub_cities", JSON.stringify(selectedCities));
-    if (subMsg) {
-      subMsg.style.display = "block";
-      setTimeout(() => subMsg.style.display = "none", 3500);
-    }
-  });
-}
+    cityControl.refreshOptions();
+  }
+
+  // 3. LOGICA DEL BOTÓN SUSCRIBIR
+  if (btnSubscribe) {
+    btnSubscribe.addEventListener('click', async () => {
+      // Validar Login
+      const isLoggedIn = localStorage.getItem("qp_logged_in") === "true";
+      if (!isLoggedIn) {
+        alert("Debes iniciar sesión para suscribirte.");
+        return;
+      }
+
+      // Obtener IDs seleccionados del Tom Select
+      const selectedIds = cityControl.getValue(); // Devuelve array de strings ["1", "5"]
+      
+      if (selectedIds.length === 0) {
+        alert("Selecciona al menos una ciudad.");
+        return;
+      }
+
+      // Convertir a números
+      const cityIdsNumbers = selectedIds.map(id => parseInt(id));
+      
+      // Obtener Token de auth
+      const token = localStorage.getItem("access_token"); 
+
+      // Enviar al Backend
+      try {
+        const res = await fetch(`${API_URL}/subscribe`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+             'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ city_ids: cityIdsNumbers })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (subMsg) {
+            subMsg.innerText = `✔ Suscripción exitosa a ${data.added} cantones nuevos.`;
+            subMsg.style.display = "block";
+            subMsg.style.color = "#34d399"; // Verde
+            setTimeout(() => subMsg.style.display = "none", 4000);
+          }
+          
+        } else {
+          // Si el backend da error (ej: Token inválido)
+          const errData = await res.json();
+          alert("Error: " + (errData.detail || "No se pudo suscribir"));
+        }
+      } catch (error) {
+        console.error("Error al suscribir:", error);
+        alert("Error de conexión al guardar suscripción.");
+      }
+    });
+  }
+});
 
 // ====== ZOOM POR PROVINCIA (FILTRO MAPA) ======
 const boundsPorProvincia = {
@@ -631,7 +707,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ====== LOADING OVERLAY MAPA ======
+// LOADING OVERLAY MAPA
 function setMapLoading(isLoading, msg) {
   const overlay = document.getElementById("mapLoading");
   if (!overlay) return;
@@ -647,7 +723,7 @@ function setMapLoading(isLoading, msg) {
   }
 }
 
-// ====== ALERTAS POR ALTA PROBABILIDAD ======
+// ALERTAS POR ALTA PROBABILIDAD
 const alertsEl = document.getElementById('alerts');
 
 // umbral: 70% = 0.70

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>QuakePredictEC — Prototipo (sin módulo de modelo)</title>
+    <title>QuakePredictEC</title>
     <link rel="stylesheet" href="styles.css" />
     <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -107,16 +107,16 @@
                 <div class="card">
                     <h3>Mapa de riesgo</h3>
                     <div id="map-ec" style="height:480px;border:1px solid #1f2937;border-radius:10px"></div>
-                     <!-- OVERLAY DE CARGA -->
+                    <!-- OVERLAY DE CARGA -->
                     <div id="mapLoading" class="map-loading" style="display:none;">
                         <div class="map-loading-card">
-                        <div class="spinner"></div>
-                        <div style="font-weight:700;margin-top:10px;">Cargando predicciones…</div>
-                        <div style="font-size:12px;color:var(--muted);margin-top:4px;">
-                            Conectando con datos sismicos recientes 
+                            <div class="spinner"></div>
+                            <div style="font-weight:700;margin-top:10px;">Cargando predicciones…</div>
+                            <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+                                Conectando con datos sismicos recientes
+                            </div>
                         </div>
                     </div>
-                </div>
             </section>
 
             <!-- Datos -->
@@ -126,7 +126,7 @@
                         <label>Buscar</label><br>
                         <input id="fSearch" placeholder="fecha o cantón">
                     </div>
-                    
+
                     <div style="align-self:end;margin-left:auto;display:flex;gap:6px;align-items:center">
                         <span class="badge" id="count">0</span>
                         <button id="btnPrev" class="chip">Anterior</button>
@@ -186,40 +186,31 @@
                     <ul id="alerts" style="list-style:none;padding-left:0;margin-top:8px"></ul>
                 </div>
 
-                <!--  NUEVO BLOQUE DE SUSCRIPCIÓN -->
+                <!--BLOQUE DE SUSCRIPCIÓN-->
                 <div id="subscriptionCard" class="card" style="margin-top:20px">
                     <h3>📩 Suscripción a alertas</h3>
-
-                    <p style="font-size:13px;color:var(--muted)">
-                        Selecciona las ciudades donde deseas recibir alertas sísmicas por correo.
+                    <p style="font-size:13px;color:var(--muted); margin-bottom: 10px;">
+                        Busca y selecciona las ciudades donde deseas recibir alertas:
                     </p>
-
-                    <div id="cityCheckboxes" style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                        <label><input type="checkbox" value="Quito"> Quito</label>
-                        <label><input type="checkbox" value="Guayaquil"> Guayaquil</label>
-                        <label><input type="checkbox" value="Cuenca"> Cuenca</label>
-                        <label><input type="checkbox" value="Manta"> Manta</label>
-                        <label><input type="checkbox" value="Ambato"> Ambato</label>
-                        <label><input type="checkbox" value="Machala"> Machala</label>
-                    </div>
-
+                    <select id="select-cities" multiple placeholder="Escribe para buscar (ej: Quito)..."
+                        autocomplete="off">
+                    </select>
                     <button id="btnSubscribe" class="chip"
-                        style="margin-top:12px;background:#22d3ee;color:#020617;font-weight:700">
-                        ✅ Suscribirme a estas ciudades
+                        style="margin-top:12px;background:#22d3ee;color:#020617;font-weight:700; border:none; cursor:pointer;">
+                        ✅ Guardar Suscripciones
                     </button>
-
                     <p id="subMsg" style="font-size:12px;margin-top:8px;color:#34d399;display:none">
                         ✔ Suscripción guardada correctamente
                     </p>
-
                 </div>
             </section>
         </main>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <script src="app.js"></script>
 </body>
 
